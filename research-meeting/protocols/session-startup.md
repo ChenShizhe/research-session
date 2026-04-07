@@ -81,7 +81,7 @@ This step retrieves project-specific memory, prior session context, and any rele
 
 **Failure handling:**
 
-- `memory-retriever` is unavailable (skill not found) — **abort startup**. Report: "memory-retriever skill is not available. Cannot bootstrap session context."
+- `memory-retriever` is unavailable (skill not found) — **warn and continue in degraded mode**. Report: "memory-retriever skill is not available. Session context will be limited to project files only." Skip to Step 3.
 - `memory-retriever` runs but reports partial failures (fail-loud) — **continue**. Note which memories were unavailable and proceed. The user sees the failure report.
 
 ### Step 3: Read Project Context
