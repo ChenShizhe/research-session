@@ -1,0 +1,49 @@
+# Voice Glossary Template
+# A correction glossary for voice-to-text transcription of technical content.
+# Populate per-project to fix common mistranscriptions in meeting notes.
+
+version: "1.0"
+project: "<project_name>"
+last_updated: "<YYYY-MM-DD>"
+
+# ---------------------------------------------------------------------------
+# terms: domain-specific vocabulary that voice engines frequently mangle.
+# Each entry maps the correct spelling to common mistranscriptions.
+# Add your project's domain terms below.
+# ---------------------------------------------------------------------------
+terms:
+  - correct: "i.i.d."
+    mistranscriptions:
+      - "IID"
+      - "eye eye dee"
+      - "i i d"
+    category: "probability"
+    expansion: "independent and identically distributed"
+  # Add more terms here. Example:
+  # - correct: "Your Technical Term"
+  #   mistranscriptions:
+  #     - "common mistranscription 1"
+  #     - "common mistranscription 2"
+  #   category: "your_domain"
+  #   expansion: "Brief definition or expansion."
+
+# ---------------------------------------------------------------------------
+# authors: researcher names commonly encountered in discussion.
+# Add names that voice engines frequently mangle in your domain.
+# ---------------------------------------------------------------------------
+authors: []
+  # Example:
+  # - correct: "Researcher Name"
+  #   mistranscriptions:
+  #     - "common mispronunciation"
+
+# ---------------------------------------------------------------------------
+# notation: symbolic or shorthand expressions used in technical speech.
+# Add notation that voice engines cannot parse correctly.
+# ---------------------------------------------------------------------------
+notation: []
+  # Example:
+  # - correct: "L^2"
+  #   mistranscriptions:
+  #     - "L2"
+  #     - "L squared"

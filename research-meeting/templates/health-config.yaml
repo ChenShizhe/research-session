@@ -1,0 +1,102 @@
+# health-config.yaml
+# Default configuration template for the research-project health digest.
+# Copy this file into your project root and customize as needed.
+
+# ---------------------------------------------------------------------------
+# Per-category enable/disable flags
+# ---------------------------------------------------------------------------
+categories:
+  manuscript:
+    enabled: true
+  code:
+    enabled: true
+  simulations:
+    enabled: true
+  literature:
+    enabled: true
+  tasks:
+    enabled: true
+
+# ---------------------------------------------------------------------------
+# Manuscript configuration
+# ---------------------------------------------------------------------------
+manuscript:
+  entry_point: "main.tex"
+  expected_sections:
+    - "Introduction"
+    - "Methods"
+    - "Results"
+    - "Discussion"
+    - "Conclusion"
+
+# ---------------------------------------------------------------------------
+# Code configuration
+# ---------------------------------------------------------------------------
+code:
+  language: "python"
+  development_mode: false
+  custom_commands:
+    test: null       # e.g. "pytest -q"
+    lint: null       # e.g. "ruff check ."
+
+# ---------------------------------------------------------------------------
+# Simulations configuration
+# ---------------------------------------------------------------------------
+simulations:
+  results_dir: "results/"
+  planned_count: 0
+  output_pattern: "*.csv"
+  failure_pattern: "ERROR|FAILED"
+  remote_server: null   # e.g. "user@cluster.example.com"
+
+# ---------------------------------------------------------------------------
+# Literature configuration
+# ---------------------------------------------------------------------------
+literature:
+  references_dir: "references/"
+  pipeline_manifest: null   # e.g. "references/pipeline.yaml"
+
+# ---------------------------------------------------------------------------
+# Tasks configuration
+# ---------------------------------------------------------------------------
+tasks:
+  task_file: "TODO.md"
+  parser: "markdown"        # markdown | yaml | json
+  scope_creep_threshold: 20 # warn when open task count exceeds this
+
+# ---------------------------------------------------------------------------
+# Staleness thresholds (days)
+# Per-artifact warning and stale day counts.
+# ---------------------------------------------------------------------------
+staleness:
+  manuscript:
+    warning_days: 7
+    stale_days: 14
+  code:
+    warning_days: 7
+    stale_days: 14
+  simulations:
+    warning_days: 14
+    stale_days: 30
+  literature:
+    warning_days: 14
+    stale_days: 30
+  tasks:
+    warning_days: 7
+    stale_days: 14
+
+# ---------------------------------------------------------------------------
+# Schedule configuration
+# ---------------------------------------------------------------------------
+schedule:
+  frequency: "weekly"   # daily | weekly | biweekly | monthly
+  day: "Monday"
+  time: "09:00"
+
+# ---------------------------------------------------------------------------
+# Advanced options
+# ---------------------------------------------------------------------------
+advanced:
+  abandoned_task_detection: false
+  stalled_branch_detection: false
+  branch_stale_days: 30

@@ -1,0 +1,179 @@
+# =============================================================================
+# Literature Review Pipeline Configuration
+# =============================================================================
+# Default template — copy to pipeline/config.yaml and customize per project.
+# Reference: protocols/literature-pipeline.md (P5-D1 Section 4 + P5-D2)
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# 1. Discovery (Stage 1 — Watcher)
+# ---------------------------------------------------------------------------
+discovery:
+  sources:
+    - name: zotero
+      enabled: true
+      # Zotero library or collection to search.
+      # library: "My Library"
+      # collection: null
+    - name: arxiv
+      enabled: true
+      # categories: ["stat.ME", "math.ST"]
+    - name: openalex
+      enabled: true
+    - name: pubmed
+      enabled: false
+    - name: semantic_scholar
+      enabled: false
+
+  # Free-text keywords used across all enabled sources.
+  keywords: []
+  #   - "your research topic"
+  #   - "specific method or technique"
+
+  # Maximum new candidates the Watcher may add per run.
+  max_candidates_per_run: 50
+
+# ---------------------------------------------------------------------------
+# 2. Screening (Stage 2 — Screener / QA-Framework)
+# ---------------------------------------------------------------------------
+screening:
+  # Inclusion criteria — framed as yes/no questions (QA-framework).
+  # A paper must pass every mandatory criterion to be included.
+  # Non-mandatory criteria contribute to the composite relevance score.
+  inclusion_criteria:
+    - question: "Does the paper address the project's central research question?"
+      mandatory: true
+      weight: 1.0
+    # - question: "Does the paper propose or evaluate a novel method?"
+    #   mandatory: false
+    #   weight: 0.8
+
+  # Exclusion criteria — if triggered, the paper is excluded regardless of
+  # inclusion scores.
+  exclusion_criteria: []
+    # - question: "Is this a review/survey paper with no original methodology?"
+    #   action: flag_as_survey
+    # - question: "Is this paper in a language other than English?"
+    #   action: exclude
+
+  # Papers with composite confidence below this threshold are marked
+  # needs-human-review rather than auto-decided.
+  relevance_threshold: 0.7
+
+# ---------------------------------------------------------------------------
+# 3. Extraction (Stage 3 — Extractor / paper-reader)
+# ---------------------------------------------------------------------------
+extraction:
+  # Order in which screened-in papers are extracted.
+  # Options: relevance_score_desc, date_desc, date_asc
+  priority_order: relevance_score_desc
+
+  # Maximum concurrent paper-reader subagents (multi-agent sessions only).
+  max_concurrent: 1
+
+  # Write/update citadel vault notes for each extracted paper via
+  # knowledge-maester after extraction.
+  vault_integration: true
+
+  # Before extracting, check if the paper already has a comprehensive vault
+  # note and use it as primary source.
+  citadel_precheck: true
+
+# ---------------------------------------------------------------------------
+# 4. Synthesis (Stage 4 — Synthesizer / research-synthesizer)
+# ---------------------------------------------------------------------------
+synthesis:
+  # Model tier used for cross-paper synthesis.
+  # Options: sonnet-tier, opus-tier
+  model: opus-tier
+
+  # Produce a structured gap analysis alongside the synthesis.
+  gap_analysis: true
+
+  # The anchor question the synthesis is framed around.
+  # Falls back to the research question in domain-prior.md if null.
+  anchor_question: null
+
+# ---------------------------------------------------------------------------
+# 5. Living Review (P5-D2 — Scheduled Watcher)
+# ---------------------------------------------------------------------------
+living_review:
+  # Master switch. When false the scheduled Watcher is inactive.
+  enabled: false
+
+  schedule:
+    # Mechanism used to trigger the scheduled Watcher run.
+    # Options: desktop_task, external_scheduler
+    mechanism: desktop_task
+    frequency: weekly
+    day: monday
+    time: "08:00"
+
+  # Sources queried during scheduled (delta-only) Watcher runs.
+  # Each source performs timestamp-based delta queries using the
+  # last_watcher_run value from the manifest.
+  sources:
+    - arxiv
+    - openalex
+    - zotero
+
+  # Optional web search targets checked during living review runs.
+  web_search_targets: []
+  #   - "https://arxiv.org/list/stat.ME/recent"
+  #   - "https://scholar.google.com/scholar?q=point+process+bandwidth"
+
+  # Alert threshold — minimum number of new candidates before an alert is
+  # generated at session start.
+  alert_threshold: 3
+
+  # Remind the user to manually download papers that are paywalled or
+  # otherwise inaccessible.
+  paper_download_reminder: true
+
+  # Maximum age (in days) before a discovery-queue entry is considered stale
+  # and deprioritized.
+  max_age_days: 30
+
+# ---------------------------------------------------------------------------
+# 6. Manifest Schema
+# ---------------------------------------------------------------------------
+# The pipeline manifest (pipeline/manifest.json) tracks per-paper state.
+# This section documents the expected schema; it is not loaded at runtime.
+#
+# manifest:
+#   version: "1.0"
+#   project: "<project-name>"
+#   created_at: "ISO-8601"
+#   updated_at: "ISO-8601"
+#
+#   # Per-source timestamps for delta queries (living review).
+#   last_watcher_run:
+#     arxiv:            "ISO-8601 | null"
+#     openalex:         "ISO-8601 | null"
+#     zotero:           "ISO-8601 | null"
+#     pubmed:           "ISO-8601 | null"
+#     semantic_scholar: "ISO-8601 | null"
+#     web_search:       "ISO-8601 | null"
+#
+#   papers:
+#     - id: "<unique-id>"
+#       title: "<paper title>"
+#       authors: ["..."]
+#       doi: "<doi | null>"
+#       doi_verified: true | false | unverified
+#       source: "<discovery source>"
+#       discovered_at: "ISO-8601"
+#       status: "discovered | screened-in | screened-out | needs-human-review
+#                | extracted | extraction-failed | inaccessible | synthesized
+#                | skipped"
+#       screening:
+#         decision: "include | exclude | needs-human-review"
+#         confidence: 0.0-1.0
+#         criteria_scores: { "<question>": { answer: "yes|no", confidence: 0.0-1.0 } }
+#         screened_by: "<model identifier>"
+#         screened_at: "ISO-8601"
+#       extraction:
+#         output_path: "<path to extraction report>"
+#         extracted_at: "ISO-8601"
+#         vault_note_path: "<citadel note path | null>"
+#       relevance_score: 0.0-1.0
