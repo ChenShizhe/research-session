@@ -2,6 +2,20 @@
 
 Two complementary skills for managing persistent, multi-session research discussions with AI agents.
 
+## Quick Start (new machine)
+
+```bash
+git clone https://github.com/ChenShizhe/research-session.git
+cd research-session
+mkdir -p ~/Documents/Research/my-project
+# Copy skills to Claude Code:
+mkdir -p ~/.claude/skills
+cp -R research-meeting ~/.claude/skills/research-meeting
+cp -R session-handoff ~/.claude/skills/session-handoff
+```
+
+**Done:** Start a Claude Code session and say "Start a research session on [topic]." See [SETUP.md](SETUP.md) for the full walkthrough including companion skill setup.
+
 ## Skills Included
 
 ### research-meeting
