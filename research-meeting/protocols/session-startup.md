@@ -86,7 +86,7 @@ This step retrieves project-specific memory, prior session context, and any rele
 
 ### Step 3: Read Project Context
 
-Read the following files from the project root (`~/Documents/Research/<active_project>/`):
+Read the following files from the project root (`<project_root>/`, resolved at session start per SKILL.md § Project Root Resolution):
 
 1. `domain-prior.md` — required for first-session orientation; may not exist for brand-new projects.
 2. `roadmap.md` (or `grand-plan.md`) — project-level roadmap, if it exists. Read if present; skip silently if not.
@@ -131,7 +131,7 @@ This question is permitted — research-meeting sessions override the "no questi
 *Phase 5 (P5-D5) — lightweight check, optional. Skipped if no Phase 5 features are configured.*
 
 ```
-If ~/Documents/Research/<project>/digests/ exists:
+If <project_root>/digests/ exists:
   Read the most recent digest file (by date in filename).
   If digest is < 7 days old:
     Present the "Status at a Glance" and "Alerts" sections to the user.
@@ -148,7 +148,7 @@ This is a lightweight check — read one file's header. The full digest is not l
 *Phase 5 (P5-D5) — lightweight check, optional. Skipped if no Phase 5 features are configured.*
 
 ```
-If ~/Documents/Research/<project>/pipeline/discovery-queue.md exists and is non-empty:
+If <project_root>/pipeline/discovery-queue.md exists and is non-empty:
   Read the summary section (paper count and last run date).
   Present: "Living review found N new papers since [date]. Review them now or later?"
   If user says "now": load protocols/literature-pipeline.md and begin screening.
@@ -160,7 +160,7 @@ If ~/Documents/Research/<project>/pipeline/discovery-queue.md exists and is non-
 *Phase 5 (P5-D5) — lightweight check, optional. Skipped if no Phase 5 features are configured.*
 
 ```
-If ~/Documents/Research/<project>/pipeline/checkpoints/ has unreviewed checkpoints:
+If <project_root>/pipeline/checkpoints/ has unreviewed checkpoints:
   Present: "A pipeline checkpoint awaits your review: [checkpoint type] from [date]."
   Offer to present the checkpoint for review.
 ```

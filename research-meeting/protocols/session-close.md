@@ -116,7 +116,7 @@ This gives the user a chance to say "wait, one more thing" before irreversible a
 
 ### Step 1: Update `tasks.md`
 
-Read the current `tasks.md` from `~/Documents/Research/<active_project>/` (or create it if it doesn't exist). Update it to reflect:
+Read the current `tasks.md` from `<project_root>/` (or create it if it doesn't exist). Update it to reflect:
 
 - Tasks completed during this session — mark as done.
 - New tasks identified during discussion — add to the list.
@@ -353,7 +353,7 @@ If voice mode (`/voice`) was active during the session, check whether any transc
 
 **"Voice mode was active this session and I noticed transcription corrections. Would you like me to update `voice-glossary.yaml` with the new entries?"**
 
-If the user agrees, update `~/Documents/Research/<active_project>/voice-glossary.yaml`:
+If the user agrees, update `<project_root>/voice-glossary.yaml`:
 
 1. Read the existing glossary (or create it from the starter template at `templates/voice-glossary.yaml` if it does not exist).
 2. For each new correction observed during the session:

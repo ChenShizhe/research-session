@@ -85,9 +85,9 @@ An explicit list of files the subagent should read for background. Select the **
 
 ```
 Read these files for context before starting:
-- ~/Documents/Research/<project>/domain-prior.md
-- ~/Documents/Research/<project>/memory/latest-summary.md
-- ~/Documents/Research/<project>/manuscript/sections/methodology.tex
+- <project_root>/domain-prior.md
+- <project_root>/memory/latest-summary.md
+- <project_root>/manuscript/sections/methodology.tex
 ```
 
 ### 4.3 Constraints (optional)
@@ -122,8 +122,8 @@ Missing: scope boundary, output path, format reference, quality criteria. The su
 > **Objective:** Compare Silverman's rule, cross-validation, and plug-in bandwidth selectors for multivariate point process cross-covariance estimation. Cover asymptotic properties, computational cost, and known failure modes.
 >
 > **Context files:**
-> - `~/Documents/Research/point-process-crosscov/domain-prior.md`
-> - `~/Documents/Research/point-process-crosscov/memory/latest-summary.md`
+> - `<project_root>/domain-prior.md`
+> - `<project_root>/memory/latest-summary.md`
 >
 > **Constraints:** This is a light delegation. Aim for a concise comparison, not an exhaustive survey. Read-only tools only — do not modify any files except the output.
 >
@@ -298,8 +298,8 @@ Focus on: [specific sections or topics, e.g., "methodology, main theorem,
 computational complexity"]. If no focus is specified, perform full extraction.
 
 Context files:
-- ~/Documents/Research/<project>/domain-prior.md
-- ~/Documents/Research/<project>/memory/latest-summary.md
+- <project_root>/domain-prior.md
+- <project_root>/memory/latest-summary.md
 - [any prior subagent outputs on related papers]
 
 Constraints:
@@ -368,9 +368,9 @@ Objective: Find [N] relevant papers on [topic] for [purpose].
 Prioritize: [recency / foundational / methodological / empirical].
 
 Context files:
-- ~/Documents/Research/<project>/domain-prior.md
-- ~/Documents/Research/<project>/memory/latest-summary.md
-- ~/Documents/Research/<project>/references/ (existing reference list)
+- <project_root>/domain-prior.md
+- <project_root>/memory/latest-summary.md
+- <project_root>/references/ (existing reference list)
 
 Constraints:
 - Follow the paper-discovery skill instructions.
@@ -439,7 +439,7 @@ Source material:
 - [additional context files if needed]
 
 Context files:
-- ~/Documents/Research/<project>/domain-prior.md
+- <project_root>/domain-prior.md
 - ~/Documents/citadel/ (search for existing notes on this subject before
   creating a new one — update rather than duplicate)
 
@@ -495,7 +495,7 @@ concept map, data pipeline, proof dependency graph, etc.] showing
 [what the diagram should depict].
 
 Context files:
-- ~/Documents/Research/<project>/domain-prior.md
+- <project_root>/domain-prior.md
 - [specific files containing the structures or relationships to visualize]
 - [prior diagrams to maintain visual consistency, if any]
 
@@ -675,10 +675,10 @@ Files the executor should read before starting. Same purpose as §4.2, but may i
 ```markdown
 ## Context Files
 
-- ~/Documents/Research/<project>/domain-prior.md
-- ~/Documents/Research/<project>/memory/latest-summary.md
-- ~/Documents/Research/<project>/results/2026-03-sim-bandwidth/summary.md
-- ~/Documents/Research/<project>/manuscript/sections/methodology.tex
+- <project_root>/domain-prior.md
+- <project_root>/memory/latest-summary.md
+- <project_root>/results/2026-03-sim-bandwidth/summary.md
+- <project_root>/manuscript/sections/methodology.tex
 ```
 
 #### Expected Output

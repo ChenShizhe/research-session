@@ -39,7 +39,7 @@ Paper statuses flow through: `discovered` -> `screened-in` | `screened-out` | `n
 ### 1.4 Pipeline Artifact Location
 
 ```
-~/Documents/Research/<project-name>/
+<project_root>/
   pipeline/
     manifest.json              # pipeline state (single source of truth)
     config.yaml                # pipeline configuration

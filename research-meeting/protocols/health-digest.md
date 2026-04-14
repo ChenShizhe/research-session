@@ -240,7 +240,7 @@ The collection layer produces a single JSON file conforming to this schema:
     "generated_at": "YYYY-MM-DDTHH:MM:SSZ",
     "digest_number": 7,
     "previous_digest": "YYYY-MM-DD",
-    "project_root": "~/Documents/Research/<project-name>"
+    "project_root": "<project_root>"
   },
   "manuscript": {
     "available": true,
@@ -370,7 +370,7 @@ The LLM does **NOT**:
 
 ### Primary: Local Scheduled Tasks
 
-The digest runs on the local machine (always-on desktop or server) with direct file system access to `~/Documents/Research/`.
+The digest runs on the local machine (always-on desktop or server) with direct file system access to the project root.
 
 **Desktop scheduled tasks (Claude Code):**
 - Survives application restarts. Full local file system access.
@@ -425,7 +425,7 @@ If the digest runs twice on the same day, the second run overwrites the first. T
 ```
 You are a project health monitor for the research project "<project-name>".
 
-Project root: ~/Documents/Research/<project-name>/
+Project root: <project_root>/
 Configuration: health-config.yaml (if present; use defaults otherwise)
 Previous digests: digests/ directory
 

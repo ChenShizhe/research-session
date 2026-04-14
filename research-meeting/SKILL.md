@@ -16,20 +16,38 @@ Logical input fields inferred by the agent from the user's request. These are no
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `active_project` | string | yes | — | Research project name. Maps to `~/Documents/Research/<active_project>/`. |
+| `active_project` | string | yes | — | Research project name or path. Resolved to an absolute project root at session start (see Project Root Resolution below). |
 | `session_objective` | string | no | none | What the user wants to accomplish this session. Inferred from opening statement. |
 | `agenda_items` | list of strings | no | none | Specific topics. Inferred from user or carried from `tasks.md`. |
 
 ### Validation
 
-- `active_project` must correspond to an existing directory under `~/Documents/Research/`. If the directory does not exist, report this and ask whether to create the project scaffold or abort.
+- `active_project` must resolve to an existing directory via the Project Root Resolution rules below. If no directory is found, report this and ask whether to create the project scaffold or abort.
 - `session_objective` and `agenda_items` are informational. No validation beyond basic presence.
+
+### Project Root Resolution
+
+At session start, the agent resolves `active_project` to an absolute filesystem path called the **project root** (`<project_root>`). This path is used by all protocols and downstream skills (session-handoff, experience-logger, etc.) for the duration of the session. It is resolved once and never re-resolved mid-session.
+
+**Resolution priority:**
+
+1. **Explicit path** — if `active_project` contains a `/` or starts with `~`, treat it as a direct path. Validate the directory exists.
+2. **Handoff context** — if a handoff document is loaded at session start and contains a project root in its metadata, use that path.
+3. **Bare name lookup** — if `active_project` is a bare name (no path separators), check these locations in order:
+   a. `~/Documents/Research/<active_project>/`
+   b. `~/Documents/Playground/projects/<active_project>/`
+   c. The current working directory, if its basename matches `active_project`.
+4. **CWD inference** — if `active_project` is not provided and the current working directory appears to be a project root (contains `handoff.md`, `tasks.md`, or `domain-prior.md`), use the CWD.
+5. **Ask the user** — if none of the above resolves, ask the user for the project path.
+
+When a match is found, confirm it with the user: "Resolved project root to `<path>`. Correct?" This confirmation prevents silent misrouting of session artifacts.
 
 ### How inputs are communicated
 
 The user does not fill out a form. Typical invocation patterns:
 
-- "Let's work on the point-process project." — `active_project` resolved from project folder names.
+- "Let's work on the point-process project." — `active_project` resolved from project folder names via bare name lookup.
+- "Let's work on `~/Documents/Playground/projects/skill-publication/`." — `active_project` used as explicit path.
 - "I want to discuss the simulation results and plan the next experiment." — `session_objective` and `agenda_items` inferred.
 - The agent may ask for clarification if `active_project` is ambiguous (e.g., multiple projects match). This is the only case where the agent asks a question at session start before entering the startup protocol.
 
@@ -107,7 +125,7 @@ When `/voice` is active and the project has a `voice-glossary.yaml` file, the ag
 
 > **Voice glossary active.** The user is dictating via speech-to-text. The following domain terms are frequently mis-transcribed. When the user's input contains a likely mistranscription from this list, silently interpret it as the correct form. Do not ask for confirmation on obvious matches.
 >
-> Terms are loaded from `~/Documents/Research/<active_project>/voice-glossary.yaml`.
+> Terms are loaded from `<project_root>/voice-glossary.yaml`.
 
 This instruction is loaded only when `/voice` is detected. It is not present in non-voice sessions. See `protocols/voice-input.md` Tier 2 for the full glossary schema and maintenance protocol.
 
@@ -318,7 +336,7 @@ Session histories are the factual, write-once record of what happened during eac
 Each session history file lives at:
 
 ```
-~/Documents/Research/<active_project>/sessions/YYYY-MM-DD-NNN.md
+<project_root>/sessions/YYYY-MM-DD-NNN.md
 ```
 
 - `YYYY-MM-DD` — the date the session took place.
@@ -430,7 +448,7 @@ Tags provide a lightweight classification system for filtering and retrieving se
 The tag registry file lives at:
 
 ```
-~/Documents/Research/<active_project>/sessions/_tags.md
+<project_root>/sessions/_tags.md
 ```
 
 #### Registry Format

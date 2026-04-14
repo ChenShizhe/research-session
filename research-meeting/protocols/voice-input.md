@@ -91,7 +91,7 @@ These errors are systematic -- the same term mis-transcribes the same way repeat
 Each research project maintains a domain glossary for voice correction at:
 
 ```
-~/Documents/Research/<project-name>/voice-glossary.yaml
+<project_root>/voice-glossary.yaml
 ```
 
 The glossary lives in the project's research directory (alongside `workspace/`, `pipeline/`, etc.), not in the skill directory. The glossary is project-specific because different projects have different specialized vocabulary.

@@ -112,7 +112,7 @@ or drafting contributions relevant to the current agenda topic.
 | `<display-name>` | Role definition `display_name` field |
 | `<project-topic>` | Group lead determines from project context |
 | `<skill-path>` | Path to the skill directory (e.g., `~/Documents/skills/research-session/research-meeting`) |
-| `<project-path>` | Path to the active research project (e.g., `~/Documents/Research/<project>`) |
+| `<project-path>` | Absolute path to the active research project (`<project_root>`, resolved at session start per SKILL.md § Project Root Resolution) |
 | `<seq>` | Next contribution sequence number (typically `001` at initialization) |
 | `<additional context files>` | From role definition `context_slice.private` entries |
 

@@ -25,7 +25,7 @@ Each invocation overwrites the previous handoff for that project. If a running h
 
 | Parameter        | Required | Type   | Description                                                                                          |
 | ---------------- | -------- | ------ | ---------------------------------------------------------------------------------------------------- |
-| `project_root`   | yes      | path   | Absolute path to the project directory. The output `handoff.md` is written here.                     |
+| `project_root`   | no       | path   | Absolute path to the project directory. The output `handoff.md` is written here. Defaults to the session's resolved project root when invoked from a research-meeting session. If not provided and no session context exists, ask the user. |
 | `project_name`   | yes      | string | Human-readable project name used in the handoff header.                                              |
 | `session_number` | no       | int    | Current session number. When omitted, auto-increment from the last handoff found in `project_root`.  |
 | `session_label`  | no       | string | Optional short label for this session (e.g. "refactor-auth", "spike-caching"). Used in the heading.  |
