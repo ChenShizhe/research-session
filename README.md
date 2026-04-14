@@ -1,21 +1,32 @@
 # research-session
 
-Two complementary skills for managing persistent, multi-session research discussions with AI agents.
+Two complementary skills for managing persistent, multi-session research discussions with AI agents. Built as [Claude Code](https://claude.ai/claude-code) skills — model-agnostic markdown instructions that any LLM agent runtime can follow.
 
-## Quick Start (new machine)
+## Prerequisites
+
+- Git
+- Claude Code or compatible agent runtime that supports SKILL.md instructions
+
+## Quick Start
 
 ```bash
 git clone https://github.com/ChenShizhe/research-session.git
 cd research-session
-# Create a project workspace (can be anywhere):
-mkdir -p ~/Documents/Research/my-project
-# Copy skills to Claude Code:
+mkdir -p ~/Documents/Research/my-project   # project workspace (anywhere on disk)
 mkdir -p ~/.claude/skills
 cp -R research-meeting ~/.claude/skills/research-meeting
-cp -R session-handoff ~/.claude/skills/session-handoff
+cp -R session-handoff  ~/.claude/skills/session-handoff
 ```
 
-**Done:** Start a Claude Code session and say "Start a research session on [topic]." See [SETUP.md](SETUP.md) for the full walkthrough including companion skill setup.
+See [SETUP.md](SETUP.md) for the full walkthrough including companion skill setup and cross-platform notes.
+
+## Usage Example
+
+Start a Claude Code session and say:
+
+> "Start a research session on [topic]."
+
+The agent bootstraps context from prior sessions and core memory, then opens a persistent discussion you can checkpoint, branch into specialist sub-agents, or close with a handoff for next time.
 
 ## Skills Included
 
@@ -52,7 +63,7 @@ Copy both skill directories to your agent's skill root:
 
 ### Project workspace
 
-Research projects can live anywhere on disk. At session start, the skill resolves the project root from your input — you can provide a bare name (e.g., "Hawkes") or a full path (e.g., `~/my-projects/hawkes/`). Bare names are looked up in `~/Documents/Research/` and `~/Documents/Playground/projects/` by default. See SKILL.md § Project Root Resolution for the full priority chain.
+Research projects can live anywhere on disk. At session start, the skill resolves the project root from your input — you can provide a bare name (e.g., "Hawkes") or a full path (e.g., `~/my-projects/hawkes/`). Bare names are looked up in `~/Documents/Research/` and `~/Documents/Playground/projects/` by default. See SKILL.md for the full priority chain.
 
 ### Core memory files
 
