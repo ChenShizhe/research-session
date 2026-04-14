@@ -7,6 +7,7 @@ Two complementary skills for managing persistent, multi-session research discuss
 ```bash
 git clone https://github.com/ChenShizhe/research-session.git
 cd research-session
+# Create a project workspace (can be anywhere):
 mkdir -p ~/Documents/Research/my-project
 # Copy skills to Claude Code:
 mkdir -p ~/.claude/skills
@@ -51,7 +52,7 @@ Copy both skill directories to your agent's skill root:
 
 ### Project workspace
 
-Research projects live under `~/Documents/Research/<project-name>/`. Each project directory is created on first use.
+Research projects can live anywhere on disk. At session start, the skill resolves the project root from your input — you can provide a bare name (e.g., "Hawkes") or a full path (e.g., `~/my-projects/hawkes/`). Bare names are looked up in `~/Documents/Research/` and `~/Documents/Playground/projects/` by default. See SKILL.md § Project Root Resolution for the full priority chain.
 
 ### Core memory files
 

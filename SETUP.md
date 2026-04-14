@@ -27,7 +27,9 @@ cd research-session
 
 ## Step 2: Create a project workspace
 
-Research projects live under `~/Documents/Research/`. Create your first project:
+Research projects can live anywhere on disk. The skill resolves the project root at session start from your input — you can provide a bare name or a full path. `~/Documents/Research/` is one default lookup location for bare names, but you can use any directory.
+
+Create your first project:
 
 ```bash
 mkdir -p ~/Documents/Research/my-project
@@ -61,7 +63,7 @@ Start a Claude Code session in your project directory and say:
 ## Cross-Platform Notes
 
 - **macOS / Linux:** Works out of the box.
-- **Windows:** Use `%USERPROFILE%\Documents\Research\` for project workspaces. All protocol and template files are plain markdown — no platform-specific code.
+- **Windows:** Use `%USERPROFILE%\Documents\Research\` or any other directory for project workspaces. All protocol and template files are plain markdown — no platform-specific code.
 
 ## Customizing Specialist Roles
 
