@@ -1,6 +1,6 @@
 # research-session
 
-Two complementary skills for managing persistent, multi-session research discussions with AI agents. Built as [Claude Code](https://claude.ai/claude-code) skills — model-agnostic markdown instructions that any LLM agent runtime can follow.
+Two complementary skills for managing persistent, multi-session research discussions with AI agents. Built as model-agnostic markdown instructions that any LLM agent runtime can follow.
 
 ## Prerequisites
 
