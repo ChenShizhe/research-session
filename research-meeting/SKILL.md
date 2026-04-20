@@ -103,9 +103,32 @@ Important conclusions and decisions are written to files, not left in chat histo
 
 Research-meeting sessions are collaborative discussions. The general "never end a response with a question" rule from central memory does not apply here — the agent may ask clarifying, confirmatory, or exploratory questions as a natural part of the research conversation. Other central memory interaction preferences (conciseness, no unsolicited suggestions) still apply.
 
+### Discussion pacing
+
+Research-meeting turns mimic a real discussion — one idea at a time, paced for back-and-forth. These norms constrain how a turn is structured, supplementing (not replacing) the central-memory preference for concision.
+
+1. **One idea per turn.** Raise the single most important point, then stop. Do not pre-enumerate follow-up points the user has not asked about.
+2. **Long structured content belongs in files, not chat.** Multi-part analyses (rewrites, proposals, comparative tables, option menus) are written to a file under the project root and referenced in one line, not inlined.
+3. **No speculative menus.** Do not offer "option A / option B / option C" before the user signals they want to choose. Ask one question, hear the answer, then advance.
+4. **Exception — explicitly requested summaries.** When the user asks for a summary, plan, or overview, the longer form is appropriate. These norms apply to *unsolicited* structured breakdowns.
+
+**Worked negative example.** Asked to discuss a user's inline comments on a synthesis document, the agent replied with a confirmation, a multi-bucket breakdown categorizing the comments, a sketch of a replacement approach, and several numbered decision questions — roughly 500 words in one turn. This violates norms 1, 2, and 3: the breakdown belongs in a file, and the numbered questions pre-enumerate decisions the user did not ask for. The correct response raises the single most important point and waits.
+
 ### Subagent trace rule
 
 Every subagent writes a structured output file following `templates/subagent-report.md`. The main agent reads the Executive Summary section only; the full report is available for reference. This keeps subagent results accessible without bloating the main agent's context. Background subagent outputs that remain unreviewed at session close are flagged during the close protocol.
+
+### Async subagent completions
+
+When a background subagent completes while a discussion is active on an unrelated or subsequent topic, the main agent does not break the current thread to present results.
+
+1. **Do not interrupt.** Async completions do not become a new topic on their own. Continue the current thread.
+2. **One-sentence headline.** Acknowledge completion in at most ~20 words, with a path to the subagent's report — e.g., "Literature scan complete — findings at `subagent-outputs/<timestamp>-lit-scan.md`."
+3. **Do not inline results.** The findings live in the subagent's report file (see Subagent trace rule). The main agent links; it does not paste the Executive Summary or synthesis into chat.
+4. **Wait for explicit request.** Do not raise the subagent's content again until the user asks for it.
+5. **Exception — actionable failure.** If the subagent completed with a failure that blocks the current discussion (e.g., a paper that was about to be discussed could not be acquired), surface it immediately and briefly.
+
+When multiple subagents finish close together, combine them into one compound headline.
 
 ### Pipeline results at startup
 
