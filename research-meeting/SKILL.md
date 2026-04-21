@@ -130,6 +130,17 @@ When a background subagent completes while a discussion is active on an unrelate
 
 When multiple subagents finish close together, combine them into one compound headline.
 
+### Writing-style retrieval
+
+When the session will produce written artifacts that should carry the user's writing style — manuscript text, review reports, theorem or assumption blocks, polished drafts, research summaries, published documents — load the user's writing-style feedback memories into context before drafting begins.
+
+1. **Trigger: automatic.** When the agent is about to produce, or dispatch a subagent to produce, writing that needs to reflect the user's style, invoke `memory-retriever` with the keyword `"writing"`. Rely on memory-retriever's matching to surface relevant feedback memories (rules about acronyms, em-dashes, restatement, assumption structure, review phrasing, etc.). Do not hard-code specific feedback filenames — the set evolves.
+2. **Timing: once per session if still in context.** Before each new writing-producing phase, check whether the writing-style memories are already in the coordinator's context from an earlier retrieval this session. If they are, no re-retrieval is needed. If context has evicted them, or they were never loaded, retrieve now.
+3. **Subagent handoff.** When dispatching a subagent that will produce writing, pass the retrieved writing-style rules as part of the delegation brief — either inline in the Constraints, or as a referenced context file. Alternatively, instruct the subagent to re-retrieve with the same keyword. Either path works; the choice is per-dispatch and based on context budget. The goal is that the subagent never drafts writing without the user's style rules loaded.
+4. **Silent consumption.** The subagent applies the rules in its output; it does not echo back which rules it consulted. The evidence that retrieval worked is that the output conforms to the user's style, not that the subagent documents its style-check.
+
+Writing-producing phases include: polishing subagent outputs into manuscript-form text; drafting theorem, lemma, or assumption blocks; consolidating trial-document content into manuscript sections; writing review reports; composing polished communications. Phases that do NOT require retrieval: mathematical verification, proof-sketch internal work, subagent coordination, status updates, scratch notes.
+
 ### Pipeline results at startup
 
 If a literature pipeline has active results (discovery queue, completed synthesis), the group lead presents a brief summary during the opening ritual. The full results are in `pipeline/` — do not load them into the main context unless the user asks.
