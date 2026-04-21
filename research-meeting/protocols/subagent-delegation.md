@@ -186,6 +186,45 @@ Do **not** read the full report proactively. The full report may be 1-2k tokens;
 
 ---
 
+## 6.5. Vault-Write Decomposition
+
+When a delegation produces content whose destination is the Citadel vault (`~/Documents/citadel/`), the delegation must be **decomposed** into two separate subagent calls:
+
+1. **Content-producing delegation.** A subagent (specialist, paper-reader, any content producer) writes its artifact to `subagent-outputs/YYYY-MM-DD-<slug>.md` following the standard report format. This subagent must not write to `~/Documents/citadel/`.
+2. **Vault-write delegation.** The main agent reintegrates the first delegation's output, then dispatches `knowledge-maester` as a separate subagent with the artifact as source material and the target vault path as a parameter. `knowledge-maester` performs the vault write.
+
+The decomposition applies regardless of how simple the content is. Specialist briefs, paper extractions, analyses, reference notes — all follow this pattern. **No subagent other than `knowledge-maester` writes directly to `~/Documents/citadel/`.**
+
+If a specialist role file (or equivalent) instructs the specialist to "write to the vault through knowledge-maester," that instruction is for the *main agent orchestrating the two-step dispatch*, not for the specialist subagent executing its one-shot task. Role files whose language implies the specialist itself can invoke `knowledge-maester` must be reworded.
+
+### Why decomposition is required
+
+Subagents are one-shot (§9): they execute to completion and terminate, and cannot spawn sub-delegations. When a main agent dispatches a single specialist subagent to do research + produce artifact + write to vault in one call, the specialist handles all three steps itself — it has no mechanism to invoke `knowledge-maester` from inside its own execution. The all-in-one dispatch is the natural failure mode whenever a main agent skips the extra delegation step, and the fallback behavior is typically a direct write to the vault that bypasses `knowledge-maester`'s sole-writer convention. Making the decomposition rule explicit makes it enforceable.
+
+### The two-step dispatch template
+
+```
+Step 1 — Content-producing delegation:
+  Objective: <produce the artifact that belongs in the vault>
+  Output: subagent-outputs/YYYY-MM-DD-<slug>.md (NOT the vault)
+  Constraint: Do not write to ~/Documents/citadel/. The main agent will
+  route this artifact to knowledge-maester in a separate dispatch.
+
+[Main agent reintegrates the first delegation's output per §6.]
+
+Step 2 — Vault-write delegation:
+  Skill: knowledge-maester
+  Objective: Ingest <artifact> to <target vault path> using the appropriate
+  ingestion script (ingest_report.py / ingest_paper.py / ingest_analysis.py /
+  ingest_ticker.py / ingest_reference.py / etc., per knowledge-maester's
+  ingestion contracts).
+  Source: subagent-outputs/YYYY-MM-DD-<slug>.md
+```
+
+Compose both steps at the same time (the vault-write dispatch is not optional "if time allows"); the pair is a single unit of work.
+
+---
+
 ## 7. Failure Handling
 
 ### 7.1 Failure Modes
