@@ -94,13 +94,42 @@ next_session_starts_here: true
 - `session` combines the session number with the optional session label.
 - `next_session_starts_here: true` is a fixed flag that lets tooling locate the active handoff.
 
-### 2. What You Are Walking Into
+### 2. Mandatory Startup Reads
+
+A list of files the next agent **must read before engaging with the rest of this handoff**. These are not reference-table mentions — they are required context. Without them the next agent will re-derive decisions, repeat logged mistakes, or operate from stale paraphrases of governing rules.
+
+#### List composition rule — fixed defaults with presence check
+
+The handoff writer populates this section from a fixed set of defaults, each guarded by a presence check:
+
+1. **Governing skill body — always included.** Path: `~/Documents/skills/research-session/research-meeting/SKILL.md`. The research-meeting skill evolves between sessions (proposals from `research-meeting-improvement/` get incorporated); the short description in the next agent's system reminder is a paraphrase, not the live body. Always listed, regardless of project type.
+2. **Project institutional memory.** If `<project_root>/memory/latest-summary.md` exists, include it as the 7-section rolling summary. If it does not exist, list this explicitly as `no project memory exists yet` — silence is ambiguous; explicit absence is not.
+3. **Error log.** If `<project_root>/memory/errors/` exists and contains any `.md` files, list each with a one-line hook copied from its corresponding tier-1 entry in `memory/latest-summary.md`. Error-log entries are load-bearing guidance for what NOT to do in the next session.
+4. **Other memory files.** If `<project_root>/memory/` contains other `.md` files that appear to be summaries or rolling notes (e.g., `latest-expanded-instruction.md`), include them.
+5. **Pending improvement proposals.** If the project has a sibling `<project>-improvement/` folder (e.g., `research-meeting-improvement/`, `knowledge-maester-improvement/`) with proposal files, list them with a note on status. The next agent should know which behaviors are already in effect by project convention even though the governing skill hasn't incorporated them yet.
+6. **Auto-memory index pointer — not a full read.** Path: `~/.claude/projects/<session_root>/memory/MEMORY.md`. Instruct the next agent to scan the index and open individual files when relevant, not to read everything.
+
+#### Format
+
+```markdown
+## 2. Mandatory Startup Reads
+
+Read these before engaging with the rest of this handoff:
+
+1. **Research-meeting skill body:** `~/Documents/skills/research-session/research-meeting/SKILL.md` — the governing skill evolves between sessions; read the current body, not the system-reminder paraphrase.
+2. **Project institutional memory:** `<project_root>/memory/latest-summary.md` — 7-section rolling summary.
+3. **Error log:** `<project_root>/memory/errors/<error-id>.md` — <one-line hook per entry>.
+4. **Pending improvement proposals:** `<paths>` — behaviors already in effect by project convention though not yet incorporated into the skill.
+5. **Auto-memory index (pointer, not full read):** `~/.claude/projects/<project>/memory/MEMORY.md` — scan for relevant entries.
+```
+
+### 3. What You Are Walking Into
 
 A **3–8 sentence** narrative paragraph that orients the next session. It should answer: What is this project? What phase is it in? What just happened? What is the most important thing to know right now?
 
 Do not use bullet points or tables in this section — write it as prose.
 
-### 3. Current Status
+### 4. Current Status
 
 A table summarizing the state of each major work area or component.
 
@@ -119,7 +148,7 @@ Example:
 | API rate limiting   | not started |
 ```
 
-### 4. Key Decisions Made
+### 5. Key Decisions Made
 
 A numbered list of decisions, **grouped by session**. Numbers are **globally sequential** across all sessions and **append-only** — earlier decisions must never be renumbered or removed when new sessions are added.
 
@@ -132,7 +161,7 @@ A numbered list of decisions, **grouped by session**. Numbers are **globally seq
 3. Rate limiting moved to the gateway layer.
 ```
 
-### 5. Pending Tasks for Next Session
+### 6. Pending Tasks for Next Session
 
 A checklist of tasks remaining, each with a **unique ID** that remains stable across handoff regenerations.
 
@@ -144,7 +173,7 @@ A checklist of tasks remaining, each with a **unique ID** that remains stable ac
 
 IDs use the format `T-NNN` and are never reused. Completed items may remain with a checked box for one handoff cycle to provide context, then should be removed.
 
-### 6. Important Files Reference
+### 7. Important Files Reference
 
 A table mapping key files to their purpose.
 
@@ -234,6 +263,7 @@ A handoff document is **good enough** when it satisfies all five criteria below.
 | Q3 | **Pending tasks are actionable**   | Each task in the Pending Tasks list is concrete enough to start immediately: it names what to do, where to do it, and has no unresolved ambiguity. |
 | Q4 | **Decisions are traceable**        | Every entry in Key Decisions Made states the decision and enough context that a reader can understand *why* it was made without consulting other sources. Decision numbers are globally stable and sequential. |
 | Q5 | **File references are current**    | Every file path in the Important Files Reference (and any inline path elsewhere in the handoff) points to a file that actually exists at the referenced location in the repo. |
+| Q6 | **Mandatory startup reads are populated and exist** | The Mandatory Startup Reads section (§2) is present. The research-meeting `SKILL.md` path is listed unconditionally. Every other listed path points to a file that actually exists. If the project has no memory folder, that absence is stated explicitly rather than silently omitted. |
 
 ### Self-Check Procedure
 
@@ -251,4 +281,6 @@ Before writing `handoff.md`, the agent **must** execute the following self-check
 
 6. **Q5 — Path verification.** For every file path in the handoff (Important Files Reference table and any inline references), verify the file exists at that path. Remove or correct any broken reference.
 
-7. **Write the file.** Only after all checks pass, write `handoff.md` to disk.
+7. **Q6 — Startup-reads verification.** Confirm the Mandatory Startup Reads section (§2) exists and is populated per the list composition rule. Confirm the research-meeting `SKILL.md` path is present. For every other path in the section, verify the file exists. If the project's memory folder is absent, confirm the section says so explicitly.
+
+8. **Write the file.** Only after all checks pass, write `handoff.md` to disk.
