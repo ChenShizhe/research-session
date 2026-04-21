@@ -32,6 +32,7 @@ Standard Close Sequence:
   Step 1:   Update tasks.md
   Step 1.3: Check for unreviewed subagent outputs
   Step 1.5: Write session history
+  Step 1.6: Error review — promote recurring mistakes to the error log
   Step 1.7: Update project summary (latest-summary.md)
   Step 2:   Remind about session-handoff
   Step 3:   Run experience-logger
@@ -262,6 +263,33 @@ This section captures a snapshot of the pipeline's state at session close, provi
 
 - `pipeline/` directory does not exist — omit the entire Pipeline State section silently.
 - Individual pipeline component unreadable — record "unknown" for that field and continue.
+
+### Step 1.6: Error Review
+
+Before regenerating the project summary, review this session's conversational arc for mistakes that a future session would benefit from knowing about. Target categories:
+
+- **Process failures** — a protocol was bypassed, a convention was violated, a delegation pattern misfired.
+- **Scope mistakes** — a subagent was dispatched for a task outside its depth; a specialist was asked to do work outside its role-file definition.
+- **Interpretation errors** — an instruction was followed literally when the spirit required something else; a schema was misapplied.
+- **Specification-vs-execution gaps** — the documented rule was clear, but the actual execution diverged under pressure or ambiguity.
+
+For each mistake likely to recur:
+
+1. Write a **tier-2 detail file** at `<project_root>/memory/errors/<error-id>.md` using the schema in `SKILL.md` (description, context at time of failure, root cause, resolution, prevention notes).
+2. Append a **tier-1 one-line entry** to the Error Knowledge section of `memory/latest-summary.md`:
+
+   ```
+   - <error-id>: <one-line description> → <resolution or status> [detail: memory/errors/<error-id>.md]
+   ```
+
+If nothing went wrong, leave the Error Knowledge section as `None.` explicitly rather than skipping this step. A `None.` after reflection is different from a `None.` by default — the former signals that review happened and nothing was worth recording; the latter signals either nothing happened or the review was skipped.
+
+**Why this step exists:** the two-tier error-knowledge infrastructure has existed in `SKILL.md` from inception, but in practice errors are discussed inline during sessions and then forgotten at close. Prompting for the error review at session close converts the infrastructure from decoration to active memory. Entries accumulate across sessions and become mandatory context for future subagent dispatches (see `protocols/subagent-delegation.md` §5 "Error log awareness").
+
+**Failure handling:**
+
+- `memory/errors/` directory does not exist — create it.
+- File write fails — **warn user**. Print the error entries to the terminal so the user can save them manually.
 
 ### Step 1.7: Update Project Summary
 

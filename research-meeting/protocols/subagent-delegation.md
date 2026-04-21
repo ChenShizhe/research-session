@@ -147,6 +147,21 @@ Select context files based on the task type:
 
 The two universal defaults are **`domain-prior.md`** (project grounding) and **`memory/latest-summary.md`** (institutional knowledge). If a subagent needs project context, these two files are almost always relevant.
 
+### Error log awareness
+
+The Error Knowledge section of `memory/latest-summary.md` and the tier-2 detail files under `memory/errors/` are a **first-class context surface**, not optional reading. Whenever you dispatch a subagent whose task could plausibly repeat a prior mistake — a pattern similar to something in the error log, a workflow that touched the same infrastructure, a delegation shape like one that failed before — the delegation brief's Context Files section must include:
+
+- `<project_root>/memory/latest-summary.md` (for the tier-1 Error Knowledge summary, alongside the other sections)
+- Any tier-2 detail files at `<project_root>/memory/errors/` that are relevant to the dispatched task
+
+And the delegation brief's Constraints section should include a directive such as:
+
+> *Check the Error Knowledge section of `memory/latest-summary.md` and the `memory/errors/` detail files. If your task pattern resembles a logged error, adjust your approach to avoid the same failure.*
+
+The subagent is expected to treat the error log as guidance for what NOT to do — analogous to how `domain-prior.md` grounds what the project IS about. The subagent does not need to echo back in its report which errors it consulted; the consumption is silent, and the evidence that it worked is the absence of recurrence.
+
+Errors accumulate across sessions. A project with six accumulated error entries has a compact "things we've learned not to do" surface that is irreplaceable, and produces better dispatch outcomes as a result. See `protocols/session-close.md` Step 1.6 for where error entries get promoted.
+
 ---
 
 ## 6. Reintegration Protocol
