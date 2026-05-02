@@ -99,6 +99,24 @@ The main agent's context window is sacred. Any task that would require approxima
 
 Important conclusions and decisions are written to files, not left in chat history. Quick exchanges stay in the conversation; anything that must survive the session is persisted to durable project files. Use the context-checkpoint protocol for mid-session persistence when needed.
 
+### In-turn mistake capture
+
+When a mistake is identified mid-session — whether by user pushback (a correction in chat) or by self-recognition (the agent notices its own error) — log it immediately as a one-line breadcrumb in the Tier 1 Error Knowledge section of `<project_root>/memory/latest-summary.md`. Do not defer to session close; details fade fast.
+
+1. **Detection.** A correction is signaled by user phrases such as *actually*, *wait*, *no*, *stop*, *wrong*, *that's not*, *let's not*, *don't*, *you missed*, *I'd rather*, *instead*. If a `UserPromptSubmit` hook flags such a phrase, the agent reads the prefilter signal as a candidate; the agent then decides whether the message is actually a correction (model veto on false positives). Self-recognition — for example, after a tool failure traceable to the agent's own misjudgment — is also a valid trigger.
+2. **Breadcrumb format.** Append a single line to the Error Knowledge section:
+
+   ```
+   - <breadcrumb-id>: [unconfirmed] <verbatim user phrase or self-noted issue> [logged YYYY-MM-DD turn N]
+   ```
+
+   `<breadcrumb-id>` is a short kebab-case slug derived from the issue (e.g., `ignored-positive-rule-framing`, `over-bounded-citation-claim`).
+3. **Acknowledgment.** Reply in chat with one line: `logged as <breadcrumb-id>`. No further interruption to the discussion.
+4. **Do NOT write a Tier 2 file mid-turn.** Mid-turn structured writes disrupt flow without benefit. The breadcrumb is enough; promotion to a structured Tier 2 file at `memory/errors/<error-id>.md` happens at session close (`protocols/session-close.md` Step 1.6), with positive "when situation S occurs, do Y" rule conversion at promotion.
+5. **Apologies in chat must accompany, not replace, the breadcrumb.** A brief acknowledgment is fine; the substance lives in the breadcrumb.
+
+The Tier 1 Error Knowledge section is loaded into context at session startup and included unconditionally in every subagent dispatch brief. Promotion at close converts breadcrumbs to retrievable Tier 2 detail files; subagent dispatches retrieve the top-k matching Tier 2 files via hybrid query (see `protocols/subagent-delegation.md` §5).
+
 ### Conversational norms
 
 Research-meeting sessions are collaborative discussions. The general "never end a response with a question" rule from central memory does not apply here — the agent may ask clarifying, confirmatory, or exploratory questions as a natural part of the research conversation. Other central memory interaction preferences (conciseness, no unsolicited suggestions) still apply.
