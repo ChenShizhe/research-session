@@ -118,7 +118,7 @@ This step is a brief inline report, not a separate protocol.
 Present to the user:
 
 1. **Project name and phase** — what phase the project is in per roadmap or handoff.
-2. **Project summary highlights** — if `memory/latest-summary.md` was loaded, present a brief (2-4 bullet) digest of its key points: overall project direction, major decisions, and any flagged risks or open questions. This gives the user a quick orientation before diving into tasks.
+2. **Project summary highlights** — if `memory/latest-summary.md` was loaded, present a brief (2-4 bullet) digest of its key points: overall project direction, major decisions, and any flagged risks or open questions. **Always include the Error Knowledge section in this digest if it has entries**: list the Tier 1 error-ids and their one-line descriptions. This keeps past failure modes in the meeting agent's working context for the substantive turns that follow, and matches the unconditional-inclusion stance of `protocols/subagent-delegation.md` §5. This gives the user a quick orientation before diving into tasks.
 3. **Pending tasks** — from `tasks.md` and/or handoff, summarized concisely.
 4. **Subagent outputs** — check `subagent-outputs/` directory. If any new files exist since the last session, list them.
 
