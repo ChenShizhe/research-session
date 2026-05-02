@@ -159,6 +159,30 @@ When the session will produce written artifacts that should carry the user's wri
 
 Writing-producing phases include: polishing subagent outputs into manuscript-form text; drafting theorem, lemma, or assumption blocks; consolidating trial-document content into manuscript sections; writing review reports; composing polished communications. Phases that do NOT require retrieval: mathematical verification, proof-sketch internal work, subagent coordination, status updates, scratch notes.
 
+### Memory-retriever auto-triggers (mid-session)
+
+Beyond the writing-style retrieval (above) and the session-startup retrieval, `memory-retriever` is invoked automatically at two named inflection points during a session. Each trigger uses **hybrid query construction**: the agent rewrites the trigger context into 2–4 focused sub-queries; deterministic vector retrieval then runs against `memory-retriever` over those sub-queries. The query rewrite is LLM-side; the retrieval over the rewritten queries is deterministic.
+
+1. **Pre-subagent-dispatch (mandatory).** Fires before every subagent dispatch. Query inputs: the dispatched task description and the subagent's role. Output is folded into the brief's Context Files section alongside the unconditional Tier 1 + top-k Tier 2 error-knowledge surface (see `protocols/subagent-delegation.md` §5). This is the keystone trigger — pre-dispatch is the most consequential inflection point in a session, and missed retrieval here costs the most downstream because the subagent runs in isolation.
+2. **Pre-substantive-design-recommendation (explicit-signal-gated).** Fires when the user's message contains explicit cues such as "how should we", "what do you think", "what's the best way to", "let's discuss", or other clear opens for a design question. Query input: the topic of the design question. Output is consulted by the meeting agent before drafting its recommendation. The trigger is gated on explicit user signals, not on automatic topic-shift detection — dialogue-segmentation classifiers are not yet reliable enough to drive auto-retrieval in production agent frameworks.
+
+#### Surfacing format
+
+When a trigger fires and returns N memories, the agent surfaces a single bracketed line in chat after retrieval:
+
+```
+[memory: N entries on <topic> — flag if surprising]
+```
+
+Suppress the line when N = 0 or when all returned memories were already loaded earlier in the session. Session-level dedup is the retriever's responsibility (see `memory-retriever/SKILL.md`).
+
+#### What is NOT a trigger
+
+- **Topic-shift detection.** Automatic dialogue-segmentation is not reliable enough to drive retrieval; rely on explicit user signals (the "let's discuss" cues above) instead.
+- **Every user turn.** Per-turn retrieval over-retrieves and degrades answer quality past a point. The named triggers fire on inflection moments only, not continuously.
+
+The session-startup retrieval handles bootstrap context. The writing-style retrieval handles writing-producing phases. These two triggers handle the remaining discussion-time inflection points.
+
 ### Pipeline results at startup
 
 If a literature pipeline has active results (discovery queue, completed synthesis), the group lead presents a brief summary during the opening ritual. The full results are in `pipeline/` — do not load them into the main context unless the user asks.
