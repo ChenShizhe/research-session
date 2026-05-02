@@ -149,18 +149,34 @@ The two universal defaults are **`domain-prior.md`** (project grounding) and **`
 
 ### Error log awareness
 
-The Error Knowledge section of `memory/latest-summary.md` and the tier-2 detail files under `memory/errors/` are a **first-class context surface**, not optional reading. Whenever you dispatch a subagent whose task could plausibly repeat a prior mistake — a pattern similar to something in the error log, a workflow that touched the same infrastructure, a delegation shape like one that failed before — the delegation brief's Context Files section must include:
+The Error Knowledge section of `memory/latest-summary.md` (Tier 1) and the structured detail files under `memory/errors/` (Tier 2) are **standing context for every subagent dispatch**, not conditional on the task "plausibly" repeating a logged error. The earlier conditional rule failed in practice because the judgment call was where the inclusion got skipped. Treat the error log the same way you treat `domain-prior.md`: it is part of project grounding.
 
-- `<project_root>/memory/latest-summary.md` (for the tier-1 Error Knowledge summary, alongside the other sections)
-- Any tier-2 detail files at `<project_root>/memory/errors/` that are relevant to the dispatched task
+#### Tier 1 — always included, unconditionally
 
-And the delegation brief's Constraints section should include a directive such as:
+Every subagent brief's Context Files section must include:
 
-> *Check the Error Knowledge section of `memory/latest-summary.md` and the `memory/errors/` detail files. If your task pattern resembles a logged error, adjust your approach to avoid the same failure.*
+- `<project_root>/memory/latest-summary.md` — the full file (the Error Knowledge section is one of seven sections). The Tier 1 section has a ~10-line budget, so the cost of always including it is negligible.
 
-The subagent is expected to treat the error log as guidance for what NOT to do — analogous to how `domain-prior.md` grounds what the project IS about. The subagent does not need to echo back in its report which errors it consulted; the consumption is silent, and the evidence that it worked is the absence of recurrence.
+#### Tier 2 — top-k retrieval via hybrid query, never full-dump
 
-Errors accumulate across sessions. A project with six accumulated error entries has a compact "things we've learned not to do" surface that is irreplaceable, and produces better dispatch outcomes as a result. See `protocols/session-close.md` Step 1.6 for where error entries get promoted.
+The Tier 2 detail files at `<project_root>/memory/errors/` are not all included. Including them all would degrade the subagent's performance via context rot: the published literature on long-input behavior shows that performance on retrieval-and-instruction tasks degrades monotonically as the input grows, driven by the *volume of irrelevant content*, not just total length. Instead, retrieve the top-k matching files (default k = 3, max k = 5) using the **hybrid query** mechanism:
+
+1. **Query construction.** The main agent rewrites the dispatched task description into a small set of focused sub-queries (typically 2–4 short topic strings drawn from the task objective and the subagent's role). Sub-query construction is LLM-side; the retrieval over them is deterministic.
+2. **Retrieval.** Invoke `memory-retriever` with the hybrid sub-queries scoped to `<project_root>/memory/errors/`. The retriever scores each Tier 2 file by `recency + importance + relevance` (the Generative Agents formula): exponential recency decay (~30-day half-life), the 1–10 importance score assigned at promotion time, and cosine similarity to the sub-queries. Initial weights are equal; tunable later.
+3. **Inclusion.** The top-k results are added to the brief's Context Files section. If retrieval returns fewer than k results, include what came back; do not pad with low-relevance entries.
+4. **Surfacing.** When Tier 2 files are included, the brief's Constraints section lists the matched error-ids and surfaces the **positive rule** field of each (the "when situation S occurs, do Y" reformulation written at promotion). The full description, root cause, and prevention notes remain in the file body for the subagent to consult on demand; the positive rule is the actionable summary that appears in the brief itself.
+
+#### Constraints directive (standing)
+
+The brief's Constraints section includes:
+
+> *Tier 1 Error Knowledge is always present in `memory/latest-summary.md`. Tier 2 files matched by the dispatch retrieval are listed below with their positive rules. If your task pattern resembles a logged error, adjust your approach to follow the positive rule.*
+
+The subagent is not expected to echo back which errors it consulted. Consumption is silent; the evidence of success is the absence of recurrence.
+
+#### Accumulation and maintenance
+
+Errors accumulate across sessions. The Tier 1 budget is enforced via maintenance compaction (see `SKILL.md` Maintenance Session Protocol). The Tier 2 file count triggers a maintenance recommendation when it reaches 10; beyond that, the retrieval mechanism still works but maintenance is overdue. See `protocols/session-close.md` Step 1.6 for where Tier 2 files are written and where the importance / positive-rule fields are assigned.
 
 ---
 
