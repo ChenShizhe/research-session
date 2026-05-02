@@ -264,32 +264,51 @@ This section captures a snapshot of the pipeline's state at session close, provi
 - `pipeline/` directory does not exist — omit the entire Pipeline State section silently.
 - Individual pipeline component unreadable — record "unknown" for that field and continue.
 
-### Step 1.6: Error Review
+### Step 1.6: Error Review and Promotion
 
-Before regenerating the project summary, review this session's conversational arc for mistakes that a future session would benefit from knowing about. Target categories:
+This step has two stages: (A) promote the in-turn breadcrumbs captured during the session into structured Tier 2 files, and (B) sweep the conversational arc for any mistakes the in-turn detector missed and capture those too.
+
+#### Stage A: Promote breadcrumbs to Tier 2 files
+
+For each `[unconfirmed]` entry in the Error Knowledge section of `<project_root>/memory/latest-summary.md` written this session (per `SKILL.md` Session Conduct → In-turn mistake capture):
+
+1. **Resolve the breadcrumb-id to a stable error-id.** Stable error-ids are short kebab-case slugs that name the failure mode (e.g., `subagent-open-questions-accumulation`, `decline-without-comparison`). The breadcrumb-id may already be acceptable; if it is too session-specific, replace it.
+2. **Write a Tier 2 detail file** at `<project_root>/memory/errors/<error-id>.md` containing:
+   - **description** — what went wrong, in one paragraph.
+   - **context** — what was being attempted at the moment of failure.
+   - **root cause** — the underlying reason, not just the surface symptom.
+   - **resolution** — what was done in-session to recover (or "none — flagged only").
+   - **prevention notes** — what a future agent should do differently.
+   - **positive rule** — a "when situation S occurs, do Y" reformulation of the lesson. Per the ReasoningBank framing, positive rules produce better adherence in subagents than bare-negative instructions, and the gap widens as models scale. If the error does not map cleanly to a single situational rule (e.g., a context-bound one-off mistake), record `n/a — context-bound; see description` rather than fabricating a rule.
+   - **importance** — a 1–10 self-assessment of how much this error is likely to recur and matter. Used for top-k ranking at retrieval time (see `protocols/subagent-delegation.md` §5). Default to 5 if uncertain; revise downward at later maintenance sessions if recurrence has not happened.
+3. **Update the Tier 1 entry** in the Error Knowledge section: drop the `[unconfirmed]` flag, replace the breadcrumb-id with the stable error-id, and append the detail link:
+
+   ```
+   - <error-id>: <one-line description> → <resolution or status> [detail: memory/errors/<error-id>.md]
+   ```
+
+#### Stage B: Sweep for missed mistakes
+
+Review the session's conversational arc for mistakes the in-turn detector did not catch. Target categories:
 
 - **Process failures** — a protocol was bypassed, a convention was violated, a delegation pattern misfired.
 - **Scope mistakes** — a subagent was dispatched for a task outside its depth; a specialist was asked to do work outside its role-file definition.
 - **Interpretation errors** — an instruction was followed literally when the spirit required something else; a schema was misapplied.
 - **Specification-vs-execution gaps** — the documented rule was clear, but the actual execution diverged under pressure or ambiguity.
 
-For each mistake likely to recur:
+For each missed mistake worth recording, follow the Stage A schema (Tier 2 file + updated Tier 1 entry, including the positive rule and importance score). Assign a stable error-id directly — there is no breadcrumb to resolve.
 
-1. Write a **tier-2 detail file** at `<project_root>/memory/errors/<error-id>.md` using the schema in `SKILL.md` (description, context at time of failure, root cause, resolution, prevention notes).
-2. Append a **tier-1 one-line entry** to the Error Knowledge section of `memory/latest-summary.md`:
+#### If nothing was logged
 
-   ```
-   - <error-id>: <one-line description> → <resolution or status> [detail: memory/errors/<error-id>.md]
-   ```
+If the in-turn detector captured nothing AND the close sweep finds nothing, leave the Error Knowledge section as `None.` explicitly rather than skipping this step. A `None.` after reflection is different from a `None.` by default — the former signals that review happened and nothing was worth recording; the latter signals either nothing happened or the review was skipped.
 
-If nothing went wrong, leave the Error Knowledge section as `None.` explicitly rather than skipping this step. A `None.` after reflection is different from a `None.` by default — the former signals that review happened and nothing was worth recording; the latter signals either nothing happened or the review was skipped.
-
-**Why this step exists:** the two-tier error-knowledge infrastructure has existed in `SKILL.md` from inception, but in practice errors are discussed inline during sessions and then forgotten at close. Prompting for the error review at session close converts the infrastructure from decoration to active memory. Entries accumulate across sessions and become mandatory context for future subagent dispatches (see `protocols/subagent-delegation.md` §5 "Error log awareness").
+**Why this step exists:** the in-turn capture pattern (Session Conduct → In-turn mistake capture) writes lightweight breadcrumbs without disrupting the discussion. Promotion at session close converts breadcrumbs into structured, ranked, retrievable Tier 2 files that participate in the dispatch-time hybrid retrieval. The close sweep is a backstop for what the in-turn detector missed. Together, the two stages turn the error-knowledge infrastructure from decoration into active anti-recurrence memory.
 
 **Failure handling:**
 
 - `memory/errors/` directory does not exist — create it.
-- File write fails — **warn user**. Print the error entries to the terminal so the user can save them manually.
+- File write fails — **warn user**. Print the entries to the terminal so the user can save them manually.
+- A breadcrumb cannot be resolved to a clear failure mode (the in-turn capture was ambiguous in retrospect) — promote it anyway with `description: ambiguous in retrospect; see breadcrumb context` and `importance: 3`. Do not silently drop breadcrumbs.
 
 ### Step 1.7: Update Project Summary
 
