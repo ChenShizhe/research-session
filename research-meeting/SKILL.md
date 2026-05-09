@@ -159,6 +159,24 @@ When the session will produce written artifacts that should carry the user's wri
 
 Writing-producing phases include: polishing subagent outputs into manuscript-form text; drafting theorem, lemma, or assumption blocks; consolidating trial-document content into manuscript sections; writing review reports; composing polished communications. Phases that do NOT require retrieval: mathematical verification, proof-sketch internal work, subagent coordination, status updates, scratch notes.
 
+### Naming discipline
+
+When writing user-facing labels for assumptions, theorems, lemmas, or techniques, do not coin new names. Default to a numbered identifier ("Assumption 1, 2, ...") with no descriptor; naming is opt-in. When a name is genuinely useful for cross-reference, use only an existing literature term with **multiple-precedent** evidence — at least two distinct published papers using the term for the same concept. If no literature term covers the concept, write a descriptive English phrase in the body and do not invent a label.
+
+Three coining vehicles trigger this rule:
+
+1. **Parenthetical labels** — e.g. `(L1, well-posedness)`. The descriptor must satisfy multiple-precedent or be omitted.
+2. **Bare descriptive phrases functioning as introduced labels** — e.g. "the predictable variation ceiling." A noun phrase introduced as a stand-in for a concept counts as a label even without parenthetical formatting.
+3. **Sub-letter sub-labels** — e.g. `(L1.a)`, `(L1.b)`. If a single condition needs splitting, use separate numbered assumptions instead.
+
+Once a name appears in a draft, re-validate it on every subsequent reference. If a name is later found to be agent-coined, fix the entire downstream chain — coined names spread.
+
+Subagents producing formal labels — paper-reader extractions, manuscript drafting, proof writeups — carry a hard naming-gate in their dispatch brief (see `protocols/subagent-delegation.md` §5 Naming-gate awareness). Other subagent types (paper-discovery, visual-architect, knowledge-maester, citadel-lookup) do not produce formal labels and are unaffected.
+
+For defense in depth, an on-demand **naming audit** can be dispatched: a one-shot subagent scans the working manuscript or draft, lists every introduced named label, classifies each (inherited / descriptive / agent-coined), and flags those needing remediation. Use this when manuscript edits accumulate or when the meeting agent suspects an anchored coining.
+
+This enforces the central-memory rule `feedback_no_fabricated_terminology.md` at the skill level. **Decision (2026-05-09):** soft directive for the meeting agent; hard gate conditioned on label-producing task types for subagents (rather than every dispatch); on-demand audit as defense in depth. If violations recur after rollout, escalate the meeting-agent side to a hard gate.
+
 ### Memory-retriever auto-triggers (mid-session)
 
 Beyond the writing-style retrieval (above) and the session-startup retrieval, `memory-retriever` is invoked automatically at two named inflection points during a session. Each trigger uses **hybrid query construction**: the agent rewrites the trigger context into 2–4 focused sub-queries; deterministic vector retrieval then runs against `memory-retriever` over those sub-queries. The query rewrite is LLM-side; the retrieval over the rewritten queries is deterministic.

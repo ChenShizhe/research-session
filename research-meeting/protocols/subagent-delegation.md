@@ -178,6 +178,48 @@ The subagent is not expected to echo back which errors it consulted. Consumption
 
 Errors accumulate across sessions. The Tier 1 budget is enforced via maintenance compaction (see `SKILL.md` Maintenance Session Protocol). The Tier 2 file count triggers a maintenance recommendation when it reaches 10; beyond that, the retrieval mechanism still works but maintenance is overdue. See `protocols/session-close.md` Step 1.6 for where Tier 2 files are written and where the importance / positive-rule fields are assigned.
 
+### Naming-gate awareness
+
+When the dispatched task involves producing user-facing assumption, theorem, lemma, or technique labels, the brief's Constraints section carries a hard naming-gate directive. The gate fires for these task types only:
+
+- **paper-reader** — extracts named theorems / lemmas / conditions from source; labels must be quoted verbatim from the paper.
+- **Manuscript drafting** — any subagent producing assumption / theorem / lemma / proposition blocks for a manuscript or trial document.
+- **Proof writeups** — subagents producing formal proof text where labels for intermediate results or technique names may be introduced.
+
+The gate does **not** apply to: paper-discovery (output is a paper list, not labels), visual-architect (diagrams are not formal labels), knowledge-maester (vault notes mirror source labels), citadel-lookup, or any search / extraction task that does not introduce new named conditions. The carve-out is by skill type — concrete and not a per-dispatch judgment call.
+
+#### Naming-gate directive (added to Constraints when in scope)
+
+> **Naming discipline (hard gate).** Do not coin new named terms for assumptions, theorems, lemmas, or techniques. For each label you introduce or quote in the output, classify as:
+>
+> - **(a)** inherited verbatim from a specific cited paper — provide the citation;
+> - **(b)** a descriptive English phrase that is not claimed to be a literature term;
+> - **(c)** a new name — disallowed. Restructure to (a) or (b).
+>
+> For (a), **multiple-precedent** evidence is required: at least two distinct published papers using the term for the same concept. If only one paper uses the term, treat it as (b) and write a descriptive phrase instead.
+>
+> Default to no label. The numbered identifier ("Assumption 1, 2, ...") is sufficient. Naming is opt-in — only when a single label is genuinely useful for cross-reference within the document.
+>
+> Three coining vehicles trigger this rule:
+>
+> 1. Parenthetical labels — e.g. `(L1, well-posedness)`.
+> 2. Bare descriptive phrases functioning as introduced labels — e.g. "the predictable variation ceiling."
+> 3. Sub-letter sub-labels — e.g. `(L1.a)`, `(L1.b)`. If a single condition needs splitting, use separate numbered assumptions.
+
+Consumption is silent — the subagent does not echo back which labels it audited. The evidence of success is the absence of coinages in the output.
+
+#### On-demand naming audit
+
+For defense in depth — catching names that escaped the per-dispatch gate, or auditing names committed before this rule was rolled out — the meeting agent can dispatch a one-shot **naming-audit subagent**. The audit pattern:
+
+> **Objective:** Scan the working manuscript or draft at `<path>` for every introduced named label (assumption, theorem, lemma, technique-name). For each, report (i) the label, (ii) the surrounding context (1–2 sentences), (iii) the classification — inherited from cited paper / descriptive phrase / agent-coined — and (iv) for inherited labels, whether multiple-precedent evidence is documented. Output a list of flagged labels needing remediation.
+>
+> **Output:** `subagent-outputs/YYYY-MM-DD-naming-audit-<doc-slug>.md`. List flagged labels grouped by classification.
+>
+> **Quality:** Do not propose replacement names; flag-only. Remediation is a separate decision between the meeting agent and the user.
+
+Use the audit when manuscript edits accumulate, when a coining is suspected, or as an opt-in routine after substantive drafting.
+
 ---
 
 ## 6. Reintegration Protocol
