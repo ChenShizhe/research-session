@@ -167,18 +167,22 @@ If <project_root>/pipeline/checkpoints/ has unreviewed checkpoints:
 
 Unreviewed checkpoints are identified by the absence of a corresponding `reviewed: true` marker in the checkpoint file's frontmatter.
 
-### Step 5d: Voice Mode Detection
+### Step 5d: Voice Input Awareness Loading (Always Active)
 
-*Phase 5 (P5-D5) — lightweight check, optional. Skipped if no Phase 5 features are configured.*
+Voice input awareness is **always loaded** at session start, regardless of whether `/voice` is active. Voice-vs-keyboard detection is heuristic (see `protocols/voice-input.md` § Voice-vs-Keyboard Detection); the matcher must have data available before the agent can classify any given message.
 
-```
-If the user has activated /voice (detectable from session state):
-  Acknowledge: "Voice mode active. Reminder: speak for discussion, type for
-  equations and code. Domain glossary loaded for [project-name]."
-  Load protocols/voice-input.md if Tier 2 correction is configured.
-```
+Read these at session start:
 
-If Tier 2 voice glossary correction is configured, load the project's `voice-glossary.yaml` and inject its terms into the system prompt for transcription correction (~300-500 tokens). See `protocols/voice-input.md` for full glossary correction protocol.
+1. `~/.claude/projects/-Users-rollbot-thebot-Documents/memory/feedback_voice_input_patterns.md` — central memory containing universal personal pronunciation patterns and the cleanup discipline. **Hardcoded read; do not rely on memory-retriever to surface it via keyword pull.**
+2. `<project_root>/voice-glossary.yaml` if present — per-project terms (paper authors, assumption labels, manuscript math vocabulary). If absent, continue without it; new project-specific entries accumulate in the file as cleanups surface during the session.
+
+If the user has activated `/voice` (detectable from session state), additionally acknowledge:
+
+> "Voice mode active. Reminder: speak for discussion, type for equations and code."
+
+The cleanup behavior runs the same whether `/voice` is on or off — the `/voice` acknowledgment is a separate norm reminder, not a gate on the cleanup matcher.
+
+See `protocols/voice-input.md` Tier 2 for matcher mechanics, cleanup discipline, voice-vs-keyboard detection, and glossary maintenance.
 
 ### Step 6: Transition to Active Discussion
 

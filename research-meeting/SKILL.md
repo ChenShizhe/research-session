@@ -213,15 +213,41 @@ If a recent health digest exists, the group lead reads the "Alerts" and "Suggest
 
 If the user activates `/voice`, the group lead acknowledges it and reminds the user of the hybrid input norms: speak for discussion, type for equations and code. For the full voice conduct norms, see `protocols/voice-input.md` (norms V1–V4).
 
-### Voice glossary correction (conditional on /voice)
+### Voice input awareness and cleanup
 
-When `/voice` is active and the project has a `voice-glossary.yaml` file, the agent loads the glossary and applies domain vocabulary correction. The correction is a system prompt addition — not a separate preprocessing step. The agent prepends the following instruction block to its working context:
+Voice transcription introduces routine errors. The agent treats every user message as potentially voice-transcribed, applies cleanup against two glossaries, and surfaces every cleanup explicitly in chat. The behavior is **always active**, not gated on `/voice` activation, because voice-vs-keyboard detection is heuristic and the matcher must have data available before classifying any given message.
 
-> **Voice glossary active.** The user is dictating via speech-to-text. The following domain terms are frequently mis-transcribed. When the user's input contains a likely mistranscription from this list, silently interpret it as the correct form. Do not ask for confirmation on obvious matches.
->
-> Terms are loaded from `<project_root>/voice-glossary.yaml`.
+#### Glossaries (loaded at session start)
 
-This instruction is loaded only when `/voice` is detected. It is not present in non-voice sessions. See `protocols/voice-input.md` Tier 2 for the full glossary schema and maintenance protocol.
+Two glossaries feed the cleanup matcher:
+
+1. **Central memory — universal personal pronunciation patterns.** `~/.claude/projects/-Users-rollbot-thebot-Documents/memory/feedback_voice_input_patterns.md`. Cross-project user-level patterns (e.g., the user pronouncing "skill" as `scale`). Loaded by `protocols/session-startup.md` Step 5d via a hardcoded Read — not via `memory-retriever` keyword pull.
+2. **Per-project — project-specific terms.** `<project_root>/voice-glossary.yaml`. Paper authors, assumption labels, technique names, manuscript math vocabulary, any project-bound terminology. Loaded at Step 5d if present.
+
+The matcher consults both. **Central-memory entries win on conflict.**
+
+#### Cleanup discipline
+
+1. **Phonetic-distance gate.** Apply cleanup only when phonetic similarity (Metaphone / Double Metaphone) is below threshold. Edit-distance similarity alone (e.g., `distraction` → `direction` — short edit distance, phonetically distinct) is not enough to trigger a cleanup.
+2. **Surface every cleanup.** For every applied cleanup, render in chat: `voice cleanup: '<transcribed>' → '<intended>' (matched: <pattern-name>)`. Never silently rewrite — the user's review is ground truth, and silent rewriting compounds errors invisibly.
+3. **Anchoring evidence.** When the cleanup matches a glossary entry, cite the source. Unanchored guesses are flagged as guesses, not as glossary matches.
+4. **When uncertain, do not correct — ask.**
+
+#### Voice-vs-keyboard detection
+
+The agent classifies each message as voice or typed:
+
+- **Voice indicators:** repetition disfluency (`let me let me ...`), colloquial / run-on structure, sparse or missing punctuation, near-homophone density, conversational fillers.
+- **Keyboard indicators:** explicit `this is typed` sentinel, terse command-style phrasing, code blocks, file paths, structured pasted content.
+- **When indicators conflict or are absent:** ask once — `voice or typed?` — and use the answer for the rest of that message stream.
+
+Cleanup is applied only to messages classified as voice. The user does not habitually announce voice input; heuristics carry the load.
+
+#### Promotion of new patterns
+
+Cross-project personal pronunciation patterns observed during the session are promoted to the central-memory file by `experience-logger` at session close per its promotion gate (judgment-based, harsh-bias toward exclusion — see `experience-logger/SKILL.md` § Voice Input Pattern Promotion). Project-specific terms are added to the per-project `voice-glossary.yaml` directly during the session by the meeting agent.
+
+See `protocols/voice-input.md` Tier 2 for the matcher mechanics, glossary schema, and maintenance protocol.
 
 ## Protocol Routing
 

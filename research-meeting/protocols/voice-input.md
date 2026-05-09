@@ -86,15 +86,25 @@ Cloud STT engines optimize for general English; statistical and mathematical ter
 
 These errors are systematic -- the same term mis-transcribes the same way repeatedly -- making them amenable to a glossary-based correction approach.
 
-### Domain Glossary File
+### Glossaries: central memory + per-project
 
-Each research project maintains a domain glossary for voice correction at:
+Voice cleanup uses **two glossaries**, consulted together. **Central-memory entries win on conflict.**
+
+#### Central memory — universal personal pronunciation patterns
+
+```
+~/.claude/projects/-Users-rollbot-thebot-Documents/memory/feedback_voice_input_patterns.md
+```
+
+Cross-project user-level patterns that hold across all projects (e.g., the user pronounces "skill" as `scale`). Loaded unconditionally at every research-meeting and personal-assistant session — see `protocols/session-startup.md` Step 5d. Format is a markdown feedback memory; new patterns are promoted into it by `experience-logger` at session close per `experience-logger/SKILL.md` § Voice Input Pattern Promotion. Compactness rules apply (each entry one bullet, max two lines, target ~20 entries).
+
+#### Per-project — project-specific terms
 
 ```
 <project_root>/voice-glossary.yaml
 ```
 
-The glossary lives in the project's research directory (alongside `workspace/`, `pipeline/`, etc.), not in the skill directory. The glossary is project-specific because different projects have different specialized vocabulary.
+Project-specific terms (paper authors, assumption labels, manuscript math vocabulary). The glossary lives in the project's research directory (alongside `workspace/`, `pipeline/`, etc.), not in the skill directory. The schema below applies. The file is **additive** — new mistranscriptions accumulate as discovered during sessions.
 
 ### Glossary Schema (`voice-glossary.yaml`)
 
@@ -156,23 +166,53 @@ domain-specific transcription errors using these rules:
 
 **Why system prompt injection, not a separate correction agent:** A separate agent would add 0.5-2 seconds of latency per turn and double the token cost of voice turns. The system prompt approach leverages the main agent's existing inference pass. The cost is ~300-500 tokens added to the system prompt (once). For systematic substitution errors that dominate domain jargon mis-transcription, this is sufficient.
 
-### Voice Mode Detection
+### Glossary Loading: Always Active (Not Gated on `/voice`)
 
-The correction glossary is loaded conditionally -- only when voice mode is active:
+Both glossaries are loaded **unconditionally at session start**, not gated on `/voice` activation. Voice-vs-keyboard detection is heuristic (see § Voice-vs-Keyboard Detection below); the matcher must have data available before the agent can classify any given message as voice.
 
-1. The user types `/voice` in the conversation.
-2. The user mentions voice input ("I'm going to use voice").
-3. The startup protocol's voice reminder prompts the user.
+Loading mechanics (see `protocols/session-startup.md` Step 5d):
 
-If no glossary file exists, voice mode still works -- the user handles transcription errors manually (Tier 1 behavior).
+1. **Central memory.** Step 5d performs an explicit Read of `~/.claude/projects/-Users-rollbot-thebot-Documents/memory/feedback_voice_input_patterns.md`. This is **hardcoded**; do not rely on `memory-retriever` to surface it via keyword pull.
+2. **Per-project glossary.** Step 5d Reads `<project_root>/voice-glossary.yaml` if present. If absent, continue without it; new project-specific entries accumulate in the file as cleanups surface during the session.
+
+If `/voice` is also active (Tier 1), the agent acknowledges it and reminds the user of the hybrid input norms. The cleanup behavior runs the same whether `/voice` is on or off — the `/voice` acknowledgment is a separate norm reminder, not a gate on the cleanup matcher.
+
+### Cleanup Discipline
+
+When a user message is classified as voice (see § Voice-vs-Keyboard Detection), the agent scans for transcription errors against both glossaries and applies cleanups under these rules:
+
+1. **Phonetic-distance gate.** Apply cleanup only when phonetic similarity (Metaphone / Double Metaphone) is below threshold. Edit-distance similarity alone is **not** enough to trigger a cleanup. Counter-example: `distraction` → `direction` is a short edit distance but phonetically distinct — do not apply. The phonetic-distance threshold is settled empirically as the user flags false-positive cleanups in chat.
+
+2. **Surface every cleanup.** For every applied cleanup, render in chat:
+
+   ```
+   voice cleanup: '<transcribed>' → '<intended>' (matched: <pattern-name>)
+   ```
+
+   Never silently rewrite. The user's review is the ground truth; silent rewriting compounds errors invisibly.
+
+3. **Anchoring evidence.** When the cleanup matches a glossary entry, cite the source (`matched personal-pattern entry` for central memory, `matched project glossary` for per-project). Unanchored guesses are flagged as guesses, not as glossary matches.
+
+4. **When uncertain, do not correct — ask.** If the agent is not confident about a cleanup (low phonetic match, multiple candidates), it surfaces the candidates and asks the user rather than guessing.
+
+### Voice-vs-Keyboard Detection
+
+The agent classifies each user message as voice or typed using these heuristics:
+
+- **Voice indicators:** repetition disfluency (`let me let me ...`), colloquial / run-on sentence structure, sparse or missing punctuation, near-homophone density, conversational fillers.
+- **Keyboard indicators:** explicit `this is typed` sentinel from the user, terse command-style phrasing, code blocks, file paths, structured pasted content.
+- **When indicators conflict or are absent:** ask once — `voice or typed?` — and use the answer for the rest of that message stream.
+
+Cleanup is applied only to messages classified as voice. Typed messages pass through unchanged. The user does not habitually announce voice input; the heuristics carry the load.
 
 ### Glossary Maintenance at Session Close
 
-The glossary improves over time:
+The glossaries improve over time:
 
-1. **During session:** When the user corrects a transcription error, the group lead notes the correction.
-2. **At session close:** The close protocol includes an optional step: "If voice mode was used and new transcription errors were observed, offer to update `voice-glossary.yaml` with the new entries."
-3. **Initial population:** When a project first enables voice input, the group lead helps populate the glossary by reviewing the project's `domain-prior.md` and extracting likely problematic terms.
+1. **During session:** When a transcription cleanup is applied (or the user manually corrects a mistranscription), the meeting agent notes the cleanup. New project-specific terms are added directly to `<project_root>/voice-glossary.yaml` during the session.
+2. **At session close — per-project glossary.** The close protocol offers: "If voice mode was used and new transcription errors were observed, update `voice-glossary.yaml` with the new entries."
+3. **At session close — central memory promotion.** `experience-logger` evaluates observed cleanups against the speech-style criterion (see `experience-logger/SKILL.md` § Voice Input Pattern Promotion). Cross-project personal patterns get promoted to the central-memory file `feedback_voice_input_patterns.md`. Project-specific terms do **not** get promoted; they stay in the per-project YAML.
+4. **Initial population:** When a project first enables voice input, the group lead helps populate the per-project glossary by reviewing the project's `domain-prior.md` and extracting likely problematic terms.
 
 ---
 
