@@ -19,11 +19,13 @@ Logical input fields inferred by the agent from the user's request. These are no
 | `active_project` | string | yes | — | Research project name or path. Resolved to an absolute project root at session start (see Project Root Resolution below). |
 | `session_objective` | string | no | none | What the user wants to accomplish this session. Inferred from opening statement. |
 | `agenda_items` | list of strings | no | none | Specific topics. Inferred from user or carried from `tasks.md`. |
+| `theory_graph_root` | string | no | auto-detected | Path to a project-local theory-graph vault. When omitted, the agent probes `<project_root>/theory/` against the detection signature (see Session Conduct → Theory graph). Explicit override is supported but rarely needed. |
 
 ### Validation
 
 - `active_project` must resolve to an existing directory via the Project Root Resolution rules below. If no directory is found, report this and ask whether to create the project scaffold or abort.
 - `session_objective` and `agenda_items` are informational. No validation beyond basic presence.
+- `theory_graph_root`, if provided, must resolve to an existing directory containing a verifier script and at least one populated theoretical-object subdirectory. If the path is provided but does not satisfy the signature, warn and proceed as if the field were absent.
 
 ### Project Root Resolution
 
@@ -176,6 +178,41 @@ Subagents producing formal labels — paper-reader extractions, manuscript draft
 For defense in depth, an on-demand **naming audit** can be dispatched: a one-shot subagent scans the working manuscript or draft, lists every introduced named label, classifies each (inherited / descriptive / agent-coined), and flags those needing remediation. Use this when manuscript edits accumulate or when the meeting agent suspects an anchored coining.
 
 This enforces the central-memory rule `feedback_no_fabricated_terminology.md` at the skill level. **Decision (2026-05-09):** soft directive for the meeting agent; hard gate conditioned on label-producing task types for subagents (rather than every dispatch); on-demand audit as defense in depth. If violations recur after rollout, escalate the meeting-agent side to a hard gate.
+
+### Theory graph
+
+When the active project carries a *theory graph* — a project-local vault at `<project_root>/theory/` holding one markdown file per theoretical object (definition, notation, assumption, theorem statement, theorem proof, lemma statement, lemma proof, corollary statement, corollary proof, interpretive remark, case-study verification) — the following directives are always active for the session.
+
+#### Detection
+
+A project carries a theory graph when both of the following hold:
+
+1. `<project_root>/theory/` exists, AND
+2. The directory contains a verifier script (e.g. `check_theory_graph.py`) AND at least one populated theoretical-object subdirectory.
+
+Both conditions are required. A stray `theory/` folder without a verifier or content is not a vault, and every directive in this subsection silently falls inactive in that case. Detection runs once at session start (see `protocols/session-startup.md` Step 5e); the result is fixed for the remainder of the session.
+
+The optional Inputs field `theory_graph_root` overrides auto-detection when provided.
+
+#### Vault is canonical for theoretical content
+
+The vault is the source of truth for theoretical content. The working document (manuscript, draft, paper) is downstream — a published surface translated from the vault. When a session turn touches a theoretical object (drafting, restructuring, fixing, proof-verifying), the vault file is the editing target. The working document is updated as a translation, after the vault edit is verifier-clean. The agent does not modify theoretical content directly in the document.
+
+#### Verifier-clean is a hard gate
+
+The verifier runs over the vault and reports per-check error and warning counts. Each check is classified by the verifier itself as either *structural* (vault/document parity, graph integrity, verbatim drift — these are blocking) or *advisory* (warning-only). The agent does not re-classify; it parses errors and warnings from the verifier's summary line.
+
+**Structural errors block theoretical edits.** When the structural error count is non-zero, the agent does not begin any theoretical-content subagent dispatch and does not write theoretical content into the document. Vault-side cleanup must reduce the count to zero first. Advisory warnings surface but do not gate.
+
+#### Read-before-discuss
+
+Before substantive discussion of a specific theoretical object, the agent reads the corresponding vault file. The trigger is **explicit object reference** in the user turn — a labelled item such as `Theorem N`, `Assumption Lk`, `Lemma N.k`, or a named definition — not heuristic topic detection. For sessions ranging over many objects, the read is amortised: read on the first turn that mentions an object, re-read only on substantive edit.
+
+This is a soft directive on the meeting agent, parallel to the soft-side of Naming discipline. The hard gate lives on subagent dispatches (see `protocols/subagent-delegation.md` §5 Vault-first awareness).
+
+#### Cross-reference
+
+The underlying motivation for the vault-first workflow lives in the central-memory rule `feedback_theory_graph_first_protocol.md`. This subsection is the operational form. Naming discipline (above) enforces label integrity; the theory graph enforces content integrity. The two directives are orthogonal and contribute independently to every theoretical-content subagent brief.
 
 ### Memory-retriever auto-triggers (mid-session)
 
@@ -393,8 +430,9 @@ A maintenance session is recommended (never automatic) when any of the following
 1. **Consecutive budget overruns** — The project summary (`memory/latest-summary.md`) has exceeded its total line budget (120 lines) for 2 or more consecutive session closes.
 2. **Error file accumulation** — The `memory/errors/` directory contains 10 or more Tier 2 detail files.
 3. **User request** — The user explicitly asks for a cleanup or maintenance session.
+4. **Vault health degradation** *(applies when a theory graph is present)* — The verifier has reported non-zero structural errors at 2 or more consecutive session closes, OR the advisory warning count has grown beyond its session-baseline threshold (default: warnings have at least doubled since the last clean reading; tunable as live use settles).
 
-The agent may suggest a maintenance session when it detects condition 1 or 2 during session startup or close. The user decides whether to proceed.
+The agent may suggest a maintenance session when it detects any of conditions 1, 2, or 4 during session startup or close. The user decides whether to proceed.
 
 ### Protocol Steps
 
@@ -419,6 +457,21 @@ Audit the two-tier error knowledge system:
 - Review all Tier 2 files in `memory/errors/`. Flag files whose corresponding Tier 1 entry was removed — these files are retained for archaeology but should not have dangling references.
 - Ensure every Tier 2 file has a corresponding Tier 1 entry (or was explicitly archived in Step 1).
 - If error files exceed 10, identify candidates for deletion: fully resolved errors with no pattern value. Confirm deletions with the user before proceeding.
+
+#### Step 2.5 — Vault Audit (when triggered)
+
+*Executed when the maintenance session was triggered by condition 4, or when a vault is present and the user requests a full review.*
+
+Run the vault verifier in full (all checks, no abbreviation) and classify findings:
+
+- **Structural drift** — verifier reports a structural error: vault/document parity mismatch, missing vault node for a document-labelled object, broken wikilink, undeclared symbol.
+- **Verbatim drift** — vault body and document body diverge after canonicalisation of comment syntax and spacing commands.
+- **Orphan vault node** — a vault file with no corresponding labelled object in the working document.
+- **Stale anchor** — vault frontmatter `document_anchor` points to a path or label that no longer exists in the working document.
+
+Produce a remediation list grouped by classification, with one line per finding (file, classification, brief diagnostic, suggested remediation). Surface the list to the user; remediation decisions are made together.
+
+A **content second pass** — content drift the verifier cannot detect, where statements compile and parse but no longer reflect the intended object — is **not** part of this automatic audit. Content audit is a user-queued task and must be requested explicitly.
 
 #### Step 3 — Open Question Cleanup
 

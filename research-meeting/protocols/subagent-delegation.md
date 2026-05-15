@@ -141,6 +141,7 @@ Select context files based on the task type:
 |-----------|--------------------------|
 | Literature-related | `domain-prior.md`, `memory/latest-summary.md`, relevant citadel entries, `references/` entries |
 | Theory/proof | `domain-prior.md`, `memory/latest-summary.md`, relevant manuscript sections, prior proof attempts |
+| Theoretical-content (vault-bearing project) | `domain-prior.md`, `memory/latest-summary.md`, `<project_root>/theory/` (the relevant vault files for the dispatched objects), the verifier report path from session start |
 | Code/simulation | `domain-prior.md`, relevant code files, prior simulation results in `results/` |
 | Visualization | `domain-prior.md`, data files or results to visualize, style preferences from `memory/latest-summary.md` |
 | General research | `domain-prior.md`, `memory/latest-summary.md` (always safe defaults) |
@@ -219,6 +220,35 @@ For defense in depth — catching names that escaped the per-dispatch gate, or a
 > **Quality:** Do not propose replacement names; flag-only. Remediation is a separate decision between the meeting agent and the user.
 
 Use the audit when manuscript edits accumulate, when a coining is suspected, or as an opt-in routine after substantive drafting.
+
+### Vault-first awareness
+
+When the active project carries a theory graph (see `SKILL.md` Session Conduct → Theory graph) and the dispatched task produces or modifies theoretical content, the brief's Constraints section carries a hard vault-first directive. The gate fires for these task types only:
+
+- **Theorem / lemma / corollary statement or proof drafting** — any subagent producing formal theoretical statements or accompanying proof text.
+- **Assumption restructuring or new-assumption introduction** — refactoring, splitting, or adding assumptions.
+- **Notation or definition introduction** — declaring new symbols, defining new objects.
+- **Interpretive remark drafting** — author commentary attached to a theorem, assumption, or definition.
+- **Proof verification or verbatim-parity check** — comparing a proof or statement across vault and document.
+- **Direct vault file authoring or repair** — `theory-vault-writer` or analogous direct vault subagents.
+
+The gate does **not** apply to: paper-reader (reads external literature, no project-vault writes), knowledge-maester (writes the citadel vault, not the project vault), paper-discovery, visual-architect, or any task that does not produce or modify theoretical content. The carve-out is by task type — concrete and not a per-dispatch judgment call, mirroring the Naming-gate's scope rule.
+
+The gate is silent on projects without a theory graph (detection per `SKILL.md` Session Conduct → Theory graph).
+
+#### Vault-first directive (added to Constraints when in scope)
+
+> **Vault-first edit (hard gate).** The project carries a theory graph at `<project_root>/theory/`. Theoretical content lives in the vault first; the working document is downstream. Your edits to any theoretical object must target the vault file. Run the verifier after the vault edit; only when it is verifier-clean may the document translation follow. If the verifier reports structural errors before your edit, stop and report — do not begin the document translation.
+>
+> The vault is canonical: when the vault and the document conflict, the vault wins. When the vault is silent and the document contains a labelled object, treat the document as the source for the *first* mirror into the vault, then proceed under vault-first thereafter.
+>
+> Consumption is silent — do not echo back which vault files you consulted. The evidence of success is verifier-clean output after your edit.
+
+Independent from the Naming-gate directive — both fire on the same task types and contribute orthogonally to the Constraints block (label discipline versus content integrity).
+
+#### Vault-blocked dispatch
+
+If the startup-time verifier reading (see `protocols/session-startup.md` Step 5e) reported a non-zero structural error count, the meeting agent does **not** dispatch theoretical-content subagents at all until the count reaches zero. The block lifts when a vault-side cleanup pass brings the verifier to clean. Non-theoretical dispatches proceed normally throughout.
 
 ---
 

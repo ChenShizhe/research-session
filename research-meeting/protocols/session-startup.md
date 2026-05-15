@@ -31,6 +31,7 @@ Phase 5 (P5-D5) — lightweight checks, all steps optional:
   Step 5b: Discovery queue check — present new papers from living review
   Step 5c: Pipeline checkpoint check — surface unreviewed checkpoints
   Step 5d: Voice mode detection — acknowledge /voice, load glossary if Tier 2 configured
+  Step 5e: Theory graph verifier surfacing — detect vault, parse hook line or run verifier, gate on errors
 
 Phase 4 (P4-D4) — only in multi-agent sessions:
   Step 6:  Roster selection — determine which specialists to activate
@@ -183,6 +184,53 @@ If the user has activated `/voice` (detectable from session state), additionally
 The cleanup behavior runs the same whether `/voice` is on or off — the `/voice` acknowledgment is a separate norm reminder, not a gate on the cleanup matcher.
 
 See `protocols/voice-input.md` Tier 2 for matcher mechanics, cleanup discipline, voice-vs-keyboard detection, and glossary maintenance.
+
+### Step 5e: Theory Graph Verifier Surfacing (when vault detected)
+
+Theory-graph projects gate theoretical-content edits on a verifier-clean vault (see `SKILL.md` Session Conduct → Theory graph). This step performs detection, parses the verifier summary, and surfaces the result in the opening ritual.
+
+#### Detect
+
+Test the detection signature against `<project_root>/`:
+
+1. `<project_root>/theory/` exists, AND
+2. The directory contains a verifier script (e.g. `check_theory_graph.py`) AND at least one populated theoretical-object subdirectory.
+
+If both conditions hold, the project carries a theory graph and this step proceeds. Otherwise this step skips silently and Step 6 follows directly.
+
+If the optional `theory_graph_root` input was provided, use it as the detection target instead of `<project_root>/theory/`.
+
+#### Parse verifier output
+
+Look for a `SessionStart` hook output line of the canonical form:
+
+```
+files=N errors=E warnings=W report=<path>
+```
+
+If the line is present, parse N, E, W, and the report path from it directly.
+
+If the line is absent, run the vault's verifier script inline and parse the same fields from its summary output. This is the fallback; project-scoped hooks are the preferred path because they run before the agent loads.
+
+#### Surface
+
+- **`errors=0`.** One-line acknowledgment in the opening ritual, alongside the existing project artifacts:
+  ```
+  Theory graph: vault clean (files=N, warnings=W). Report: <path>.
+  ```
+- **`errors>0`.** Surface the count and refuse to dispatch theoretical-content subagents until the count returns to zero:
+  ```
+  Theory graph: vault has E structural error(s). Theoretical-content
+  dispatches are blocked until the count reaches zero. Report: <path>.
+  Proposing a vault-side cleanup pass before any theoretical edit.
+  ```
+  The block applies to the subagent task types listed in `protocols/subagent-delegation.md` §5 Vault-first awareness. Non-theoretical dispatches proceed normally.
+
+**Failure handling:**
+
+- Hook line absent and verifier script missing — warn and continue without a verifier reading. Surface: `Theory graph: detected but verifier unavailable; gate is disabled this session.`
+- Verifier script fails to run — capture the error, report it, and disable the gate for this session.
+- Verifier output cannot be parsed against the canonical form — fall back to running the script inline; if that also fails, disable the gate and warn.
 
 ### Step 6: Transition to Active Discussion
 

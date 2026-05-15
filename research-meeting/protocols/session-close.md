@@ -31,6 +31,7 @@ Standard Close Sequence:
   Step 0:   Confirm intent
   Step 1:   Update tasks.md
   Step 1.3: Check for unreviewed subagent outputs
+  Step 1.4: Vault re-verification (when theory graph present)
   Step 1.5: Write session history
   Step 1.6: Error review — promote recurring mistakes to the error log
   Step 1.7: Update project summary (latest-summary.md)
@@ -160,6 +161,41 @@ After processing, report to the user: **"Found N unreviewed subagent output(s). 
 
 - `subagent-outputs/` directory does not exist or is empty — skip silently.
 - A file cannot be read — add the task anyway with status `unknown`, and warn the user.
+
+### Step 1.4: Vault Re-verification (when theory graph present)
+
+When the active project carries a theory graph (detected at session start per `protocols/session-startup.md` Step 5e), re-run the vault verifier at session close and compare against the session-start reading.
+
+#### Run
+
+Invoke the same verifier mechanism used at startup — either the `SessionStart` hook's command, or the inline verifier script. Capture the post-session summary line:
+
+```
+files=N errors=E warnings=W report=<path>
+```
+
+#### Compare
+
+Compute the delta against the session-start reading:
+
+- `Δerrors` — change in structural error count.
+- `Δwarnings` — change in advisory warning count.
+- New files / removed files — list any vault files added or deleted during the session.
+
+#### Surface
+
+- **`Δerrors == 0` and `Δwarnings == 0`.** Silent (no chat output). The verifier report path is still appended to the session history's Changes Made section as a routine record.
+- **`Δerrors > 0`** (structural errors rose during the session). Surface the count and the file list. Refuse to enter Step 1.5 (Write Session History) until the user acknowledges. The new errors are candidates for Tier 1 error knowledge if they reflect a recurring failure mode (defer the promotion judgment to Step 1.6).
+- **`Δerrors < 0`** (errors decreased). One-line acknowledgment alongside the existing pipeline-state lines: `Theory graph: structural errors reduced by |Δerrors| this session.`
+- **`Δwarnings != 0` only** (no structural change). One-line acknowledgment: `Theory graph: advisory warnings changed by Δwarnings this session.`
+
+In all cases, write the post-session verifier report path into the session history's Changes Made section per Step 1.5.
+
+**Failure handling:**
+
+- Theory graph not present — skip silently.
+- Verifier unavailable at close (script missing, hook fails) — skip with a one-line warning: `Theory graph: close-time verifier unavailable; pre/post comparison skipped.`
+- Verifier output cannot be parsed — fall back to recording the raw output in the session history's Changes Made section and continue.
 
 ### Step 1.5: Write Session History
 
