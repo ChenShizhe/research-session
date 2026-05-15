@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 {{PROJECT_ROOT}}/theory/_scripts/check_theory_graph.py --vault {{PROJECT_ROOT}}/theory --manuscript-root {{MANUSCRIPT_ROOT}} --report-path {{PROJECT_ROOT}}/theory/_meta/_verifier-report.md 2>&1 | tail -1"
+          }
+        ]
+      }
+    ]
+  }
+}

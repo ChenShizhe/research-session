@@ -214,6 +214,14 @@ This is a soft directive on the meeting agent, parallel to the soft-side of Nami
 
 The underlying motivation for the vault-first workflow lives in the central-memory rule `feedback_theory_graph_first_protocol.md`. This subsection is the operational form. Naming discipline (above) enforces label integrity; the theory graph enforces content integrity. The two directives are orthogonal and contribute independently to every theoretical-content subagent brief.
 
+#### Scaffolding on request
+
+When the user asks the agent to scaffold a theory graph for the active project (conversational cue, no input field), the agent loads `protocols/theory-graph-scaffold.md` and follows it. The scaffolder lays the canonical directory tree under `<project_root>/theory/`, drops a project-agnostic verifier copy with substituted defaults, writes `_meta/config.yaml` plus severity overrides, seeds a single `notation/_stub.md` to satisfy the detection signature, and optionally installs a `SessionStart` hook at `<project_root>/.claude/settings.json`.
+
+Scaffolding is one-shot per project. Re-invoking on a project that already has a vault triggers the protocol's refuse-to-overwrite rule (abort, augment, or two-step-confirmed overwrite). The scaffolder is the one operation exempt from the Vault-first hard gate — it brings the canonical surface into existence rather than editing inside one (see `protocols/subagent-delegation.md` §5 Vault-first awareness).
+
+After scaffolding, `theory-vault-writer` `add-object` authors the first real theoretical node, which removes the scaffold stub automatically.
+
 ### Memory-retriever auto-triggers (mid-session)
 
 Beyond the writing-style retrieval (above) and the session-startup retrieval, `memory-retriever` is invoked automatically at two named inflection points during a session. Each trigger uses **hybrid query construction**: the agent rewrites the trigger context into 2–4 focused sub-queries; deterministic vector retrieval then runs against `memory-retriever` over those sub-queries. The query rewrite is LLM-side; the retrieval over the rewritten queries is deterministic.

@@ -1,0 +1,18 @@
+# Theory-graph vault config — substituted by the scaffolder at copy time.
+# Manual edits are supported; the scaffolder never overwrites once written.
+
+project_root: {{PROJECT_ROOT}}
+manuscript_root: {{MANUSCRIPT_ROOT}}            # absolute path or the literal string TBD
+manuscript_path_prefix_strip: src/main/         # strip this prefix when normalising manuscript-anchor paths
+
+manuscript_label_kinds:
+  - thm
+  - lmm
+  - cor
+  - asmp
+  - def
+  - rmk
+
+# Optional severity-overrides file. The default file (severity-overrides.yaml)
+# downgrades manuscript-coupled checks while manuscript_root is TBD.
+severity_overrides_file: severity-overrides.yaml

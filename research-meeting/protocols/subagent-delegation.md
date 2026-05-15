@@ -246,6 +246,10 @@ The gate is silent on projects without a theory graph (detection per `SKILL.md` 
 
 Independent from the Naming-gate directive — both fire on the same task types and contribute orthogonally to the Constraints block (label discipline versus content integrity).
 
+#### Scaffolder exemption
+
+The theory-graph scaffolder (`protocols/theory-graph-scaffold.md`) is itself a vault-creation operation. It brings the canonical surface into existence rather than editing inside one, and is therefore exempt from the Vault-first directive. Once scaffolding completes, every subsequent vault touch goes through the hard gate as usual.
+
 #### Vault-blocked dispatch
 
 If the startup-time verifier reading (see `protocols/session-startup.md` Step 5e) reported a non-zero structural error count, the meeting agent does **not** dispatch theoretical-content subagents at all until the count reaches zero. The block lifts when a vault-side cleanup pass brings the verifier to clean. Non-theoretical dispatches proceed normally throughout.

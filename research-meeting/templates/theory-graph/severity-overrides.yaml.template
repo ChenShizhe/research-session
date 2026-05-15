@@ -1,0 +1,16 @@
+# Severity overrides for a freshly scaffolded vault that does not yet have a
+# manuscript. Manuscript-coupled checks (V9–V14) are downgraded to "info" so
+# the verifier emits warnings rather than errors while the project bootstraps.
+#
+# Once the project sets a real manuscript_root in _meta/config.yaml and adds
+# vault nodes with real manuscript-anchor values, the user can either:
+#   (a) delete this file (defaults take over — V9, V10, V11, V12, V14 fire at
+#       their built-in severities), or
+#   (b) flip the entries below from "info" to "error" / "warning" to mirror the
+#       built-in severities.
+
+V9:  info   # drift detection (manuscript-anchor content match)
+V10: info   # manuscript-to-vault parity
+V11: info   # verbatim parity
+V12: info   # orphan vault label (no manuscript reference)
+V14: info   # stale manuscript-anchor line number
