@@ -41,6 +41,7 @@ Standard Close Sequence:
   Step 3.5: Central memory promotion reminder (conditional)
   Step 3.7: Glossary maintenance (P5-D5, optional)
   Step 4:   Final summary — includes pipeline state report
+  Step 5:   Emit next-session bootstrap prompt (conditional on handoff written this session)
 ```
 
 **Notes:**
@@ -472,7 +473,23 @@ Print a brief summary of what was accomplished:
 - Files modified or created.
 - **Pipeline state** *(Phase 5, if active)* — current state of discovery queue, living review, checkpoints, and health digest. This mirrors the Pipeline State section written to the session history in Step 1.5, giving the user a verbal summary before session end.
 
-This is the last output of the session.
+This is the last narrative output of the session. If a handoff was written this session, Step 5 follows with the bootstrap block.
+
+### Step 5: Emit Next-Session Bootstrap Prompt (Conditional)
+
+If a handoff file was produced during this session (the user invoked `session-handoff` per Step 2's reminder), print a copy-paste-ready bootstrap prompt as the **very last block** of the final close-of-session message. The user's workflow after `/clear` is to paste this verbatim, so the next session opens with full context and no verbal re-briefing.
+
+Take the absolute path of the handoff file written by `session-handoff` and substitute it for `<PATH>` in the block below. Emit the block as a fenced markdown code block so the chat UI surfaces a copy button — the fence is load-bearing for verbatim copy ease and must not be flattened into prose.
+
+````
+```
+Read and follow the handoff at <PATH>. Also read the recommended files therein. When you are done, report what you read and what you have prepared, then stand by.
+```
+````
+
+Nothing follows this block in the close-of-session message — no commentary, no sign-off, no "next session" header. The bootstrap block is terminal.
+
+**When to skip:** if no handoff file was written this session, skip this step silently. Do not substitute a fallback path or emit a degraded bootstrap line.
 
 ---
 
