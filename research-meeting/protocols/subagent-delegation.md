@@ -254,6 +254,20 @@ The theory-graph scaffolder (`protocols/theory-graph-scaffold.md`) is itself a v
 
 If the startup-time verifier reading (see `protocols/session-startup.md` Step 5e) reported a non-zero structural error count, the meeting agent does **not** dispatch theoretical-content subagents at all until the count reaches zero. The block lifts when a vault-side cleanup pass brings the verifier to clean. Non-theoretical dispatches proceed normally throughout.
 
+### Statement-parity awareness
+
+When the dispatched task is a `lean-translator translate` operation (per skill profile §10.6), the brief's Constraints section carries a soft statement-parity reminder. This is a soft directive — the translator subagent already enforces the gate internally via the role file (`~/Documents/skills/research-session/lean-translator/roles/translator.md`) — but the meeting agent should pass through the human-review expectation explicitly so the orchestration is unambiguous.
+
+The reminder fires only for `lean-translator translate` dispatches. Other dispatches against the same vault (e.g., `theory-vault-writer add-object`, paper-reader extractions) are unaffected: they do not produce Lean output and the gate does not apply.
+
+#### Statement-parity reminder (added to Constraints when in scope)
+
+> **Statement parity (advisory).** Your translation produces a vault frontmatter status of `verified-pending-review` on success, never `verified`. Statement-parity human approval is a separate gate the meeting agent fires after your dispatch returns. Do not pre-approve, do not flip the status to `verified` yourself, and do not skip writing the Lean statement file at Stage 1 (it is the basis of the human gate). If you introduce inline axioms or substantive local stochastic definitions to bridge a Mathlib gap, the success status is `verified-local-axioms` instead.
+
+#### Independence
+
+Independent from the Vault-first directive — `lean-translator translate` writes to `<vault_root>/theory/lean/`, not to vault statement or proof body content, so the vault-first hard gate does not apply (the translator is not editing vault theoretical content; it is producing a parallel Lean translation of it). The two directives address orthogonal concerns: vault-first protects the vault as canonical source; statement-parity protects against silent semantic drift in the Lean shadow.
+
 ---
 
 ## 6. Reintegration Protocol
@@ -702,6 +716,44 @@ At session close (or at natural breakpoints), the main agent appends observation
 - **User feedback**: Corrections or preferences expressed during the session that are worth recording beyond the immediate conversation.
 
 These observations feed into the project's continuous improvement loop — they are the raw material for refining delegation briefs, adjusting turn limits, and evolving skill instructions over time.
+
+---
+
+### 10.6 Lean-Translator
+
+> **Scope.** The `lean-translator` skill (under `~/Documents/skills/research-session/lean-translator/`) provides an optional, opt-in Lean 4 verification layer for projects with a theory graph. It exposes five operations: `scaffold-lean-project`, `audit`, `translate`, `verify`, `digest`. See the skill's `SKILL.md` for the full operation list.
+
+#### When to delegate
+
+- **`translate` is a foreground subagent dispatch.** The translator subagent (role file: `lean-translator/roles/translator.md`) is dispatched per vault node. Cost surfacing (token + wall-clock estimate) precedes every dispatch; the user is the gate.
+- **`audit` and `verify` are direct script invocations** (Python via Bash). No subagent. The meeting agent runs the script and surfaces the canonical summary line.
+- **`digest` is a direct read of frontmatter + `_attempts/`** by the meeting agent. No subagent.
+- **`scaffold-lean-project` is a direct file-operations sequence** by the meeting agent following `protocols/scaffold-lean-project.md`. No subagent.
+
+The only operation that warrants subagent delegation is `translate`. The others stay with the meeting agent.
+
+#### Brief content (when dispatching `translate`)
+
+The brief follows the standard schema (§4) with these specifics:
+
+| Field | Value |
+|-------|-------|
+| `Role` | `lean-translator` (from `lean-translator/roles/translator.md`) |
+| `Inputs` | vault statement file, vault proof file, target Lean file path, project Lean root, project namespace, iteration budget (default K=5), list of existing successful translations for import-reference |
+| `Constraints` | Anti-hallucination rules from the role file (no fabricated `sorry` success, no foundational `axiom`, no invented Mathlib lemma names); statement-parity reminder (per §5 Statement-parity awareness); standard Tier 1 error knowledge + top-k Tier 2 from `memory-retriever`; `feedback_depersonalize_published_skill_examples` if working on the synthetic surrogate example |
+| `Output spec` | On success: vault frontmatter updated to `verified-pending-review` (or `verified-local-axioms`), Lean file written under `<NS>/Translated/<Kind>/<NodeId>.lean`, one-line success report. On failure: `_attempts/<node-id>.lean-attempt.md` written, vault frontmatter to `failed` with diagnostics class, one-line failure report. |
+| `Quality criteria` | Lake build exit code 0 for success; no `sorry`, `admit`, or foundational `axiom` in the Lean file unless explicitly classified as `verified-local-axioms` |
+
+#### Output Format Notes
+
+- **Frontmatter**: Standard subagent report schema. `skill_used: lean-translator`. Add `lean_node_id: <node-id>` and `lean_outcome: verified-pending-review | verified-local-axioms | failed`.
+- **Executive Summary**: One paragraph: what was attempted, the outcome, the diagnostics class on failure or the local-axioms list on `verified-local-axioms`.
+- **Key Findings**: Lean file contents (on success) or final attempt contents + compiler error (on failure).
+- **Artifacts**: Lean file path + (on failure) attempt diagnostics file path.
+
+#### Turn limits
+
+Default turn limit: 5 (matches the iteration budget K from the role file). Each iteration is one compile-feedback round, so a 5-turn dispatch corresponds to a translator using its full budget. If the translator typically resolves in 1–2 turns on simple nodes, this limit is over-generous; calibrate after pilot.
 
 ---
 

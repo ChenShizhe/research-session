@@ -209,6 +209,31 @@ Free-form guidance directed at the next agent or collaborator — gotchas, non-o
 
 Lightweight tracking for multi-step workflows that span sessions (e.g. a migration rollout plan with phases and current phase highlighted).
 
+### Lean status
+
+Included when the project has the `lean-translator` skill scaffolded (i.e. `<project_root>/theory/lean/` exists). Populated by the `lean-translator digest` operation at handoff-write time. This is the **session-start push surface** for Lean translation diagnostics — the next session reads this section during the opening ritual (per `research-meeting/protocols/session-startup.md` Step 5e Lean verifier sub-step) and the user triages pending-review nodes and recent failures at a moment when they have time and energy to act.
+
+Structure (populated from the template at `~/Documents/skills/research-session/lean-translator/templates/handoff-lean-section.md.template`):
+
+```markdown
+## Lean status
+
+**Pending-review queue** (statement-parity human gate required):
+  - <node-id> (<status>)
+  - ...
+
+**Recent failures** (last 7 days):
+  - translation-bug: <N> — <node ids>
+  - dep-mismatch: <N> — <node ids>
+  - proof-gap: <N> — <node ids>
+
+**Stale (vault edited since last translation)**: <count> nodes — re-translation queued
+
+**Summary**: `lean: nodes=N verified=V failed=F stale=S not-attempted=A pending-review=R`
+```
+
+Omit the entire section when the digest is empty (no pending-review, no recent failures, no stale). Do not include an empty `## Lean status` heading in handoffs.
+
 ---
 
 ## Prohibited Sections

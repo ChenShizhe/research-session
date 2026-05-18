@@ -1,0 +1,20 @@
+import Mathlib
+
+/-!
+# {{PROJECT_NAMESPACE}}.ProjectLib
+
+Project-local Lean definitions. Empty at scaffold time; grows incrementally as
+the translator encounters mathematical objects not covered by Mathlib.
+
+Each definition added here should:
+1. Have a one-line comment describing the source vault node that motivated it.
+2. Be conservative — prefer reusing Mathlib idioms over inventing parallel structure.
+3. Be marked `noncomputable` if it depends on classical reasoning.
+
+When a Mathlib upstream PR lands that subsumes a definition here, delete the local
+version and update dependent translated files via re-translation.
+-/
+
+namespace {{PROJECT_NAMESPACE}}.ProjectLib
+
+end {{PROJECT_NAMESPACE}}.ProjectLib

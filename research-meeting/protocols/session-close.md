@@ -198,6 +198,33 @@ In all cases, write the post-session verifier report path into the session histo
 - Verifier unavailable at close (script missing, hook fails) — skip with a one-line warning: `Theory graph: close-time verifier unavailable; pre/post comparison skipped.`
 - Verifier output cannot be parsed — fall back to recording the raw output in the session history's Changes Made section and continue.
 
+#### Lean re-verification (when `lean-translator` scaffolded)
+
+When the project additionally carries a Lean translation workspace at `<project_root>/theory/lean/`, re-run the Lean verifier alongside the structural one. Dispatch in background (`Bash run_in_background: true`) so the close protocol does not block on Mathlib compile time:
+
+```
+python3 <project_root>/theory/lean/_scripts/check_lean.py --skip-build
+```
+
+`--skip-build` aggregates from vault frontmatter only — no Lake invocation, so completion is sub-second. The full-build variant (without `--skip-build`) is reserved for explicit user request mid-session; close-time uses the fast aggregation.
+
+Compute the delta against the session-start Lean reading:
+
+- `Δverified` — new translations approved or auto-completed during the session.
+- `Δfailed` — new translator failures.
+- `Δstale` — vault edits this session that invalidated prior translations.
+
+Surface:
+
+- **All deltas zero.** Silent. The Lean verifier path is appended to the session history's Changes Made section as a routine record (alongside the structural verifier).
+- **`Δverified > 0`.** One-line acknowledgment: `Lean translation: <Δverified> new verified node(s) this session.`
+- **`Δstale > 0`.** One-line acknowledgment: `Lean translation: <Δstale> node(s) marked stale by vault edits this session — re-translation queued.`
+- **`Δfailed > 0`.** One-line acknowledgment: `Lean translation: <Δfailed> new failure(s) this session.`
+
+**Do not emit a failure digest at session close** — failures surface at the start of the next session via the handoff's optional `## Lean status` section (populated by the `digest` operation when the handoff is written). This is an explicit design constraint of proposal 15: end-of-session is the wrong moment for the user to triage Lean diagnostics, because they are winding down and have neither time nor energy to react.
+
+Failure handling parallels the structural verifier: missing script → skip with one-line warning; unparseable output → record raw and continue.
+
 ### Step 1.5: Write Session History
 
 Write a session history file to `sessions/YYYY-MM-DD-NNN.md` (where `NNN` is a zero-padded sequence number for the day, e.g., `001`). The session history captures the factual record of what happened during this session.

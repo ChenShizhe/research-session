@@ -1,0 +1,12 @@
+name = "{{PROJECT_NAMESPACE}}"
+version = "0.1.0"
+defaultTargets = ["{{PROJECT_NAMESPACE}}"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+version = "{{MATHLIB_VERSION}}"
+
+[[lean_lib]]
+name = "{{PROJECT_NAMESPACE}}"
+srcDir = "lib"

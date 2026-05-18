@@ -222,6 +222,16 @@ Scaffolding is one-shot per project. Re-invoking on a project that already has a
 
 After scaffolding, `theory-vault-writer` `add-object` authors the first real theoretical node, which removes the scaffold stub automatically.
 
+#### Lean translation (optional)
+
+A project with a theory graph may additionally opt into Lean 4 verification of its vault proof nodes via the `lean-translator` skill (`~/Documents/skills/research-session/lean-translator/`). When the user invokes the skill's `scaffold-lean-project` operation, the project gains a per-vault Lean workspace at `<project_root>/theory/lean/` paralleling the vault subdirectory structure. The skill then provides operations for vault triage (`audit`), per-node translation (`translate`), compile-state verification (`verify`), and failure-rollup surfacing (`digest`).
+
+Lean verification is **advisory only**. It never blocks vault edits, never blocks subagent dispatch, and does not enter the structural-verifier hard gate from the Theory graph subsection above. Failures and pending-review states surface through two channels: when the user asks mid-session (pull, via `digest`), and at the start of the next session via the handoff's optional `## Lean status` section (push). Failures are **not** surfaced at session close — the user has time and energy to react at session start, not at wind-down.
+
+The `lean-translator` skill ships with a statement-parity human gate: every translator dispatch that produces a compiling Lean file leaves the vault node at `verified-pending-review` until the user approves that the Lean statement faithfully captures the vault statement. Only on approval does the badge flip to `verified`. This gate is the mitigation for silent semantic drift — Lean compiling against ad-hoc local definitions that do not reflect the source theorem.
+
+For the full operation specifications, see `~/Documents/skills/research-session/lean-translator/SKILL.md`.
+
 ### Memory-retriever auto-triggers (mid-session)
 
 Beyond the writing-style retrieval (above) and the session-startup retrieval, `memory-retriever` is invoked automatically at two named inflection points during a session. Each trigger uses **hybrid query construction**: the agent rewrites the trigger context into 2–4 focused sub-queries; deterministic vector retrieval then runs against `memory-retriever` over those sub-queries. The query rewrite is LLM-side; the retrieval over the rewritten queries is deterministic.

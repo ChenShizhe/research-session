@@ -232,6 +232,28 @@ If the line is absent, run the vault's verifier script inline and parse the same
 - Verifier script fails to run — capture the error, report it, and disable the gate for this session.
 - Verifier output cannot be parsed against the canonical form — fall back to running the script inline; if that also fails, disable the gate and warn.
 
+#### Lean verifier (when `lean-translator` scaffolded)
+
+A project that has additionally opted into Lean translation (see `SKILL.md` Session Conduct → Theory graph → Lean translation) carries a per-vault Lean workspace at `<project_root>/theory/lean/`. The Lean verifier emits a parallel canonical line:
+
+```
+lean: nodes=N verified=V failed=F stale=S not-attempted=A pending-review=R
+```
+
+Detection: `<project_root>/theory/lean/` exists. If absent, this sub-step skips silently; the structural verifier handling above is the only verifier surface.
+
+Source of the line: same as the structural verifier — the `SessionStart` hook installed by `scaffold-lean-project` (Step 9 of that protocol, opt-in) emits this line alongside the structural line. If the hook is absent, run `python3 <project_root>/theory/lean/_scripts/check_lean.py --skip-build` inline.
+
+Surface in the opening ritual:
+
+```
+Lean translation: <N> nodes, <V> verified, <R> pending-review, <F> failed (last week), <S> stale.
+```
+
+If the handoff document loaded in Step 3 contains a `## Lean status` section (the optional push surface from the `digest` operation), surface its contents in the opening ritual immediately after the verifier line. This is the session-start failure-surface — the place where Lean diagnostics meet the user with enough time and energy to react.
+
+Unlike the structural verifier, the Lean verifier **does not gate** any subagent dispatch. Lean is advisory-only. Failure counts are informational; pending-review counts are the only actionable surface (the user reviews them when ready).
+
 ### Step 6: Transition to Active Discussion
 
 Once the user responds to the opening ritual and any Phase 5 checks have been presented, the startup protocol is complete. The agent transitions to operating under SKILL.md's Session Conduct directives. The startup protocol's procedural steps are no longer needed in active context and become eligible for context eviction.

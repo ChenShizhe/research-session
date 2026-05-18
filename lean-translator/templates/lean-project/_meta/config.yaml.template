@@ -1,0 +1,33 @@
+# lean-translator project config
+# Populated by scaffold-lean-project; users may edit any field post-scaffold.
+
+project_namespace: "{{PROJECT_NAMESPACE}}"
+lean_version: "{{LEAN_VERSION}}"
+mathlib_version: "{{MATHLIB_VERSION}}"
+
+# Atomization heuristics (default thresholds for the audit classifier).
+# A vault node is flagged `too-coarse` if any of these trip.
+atomization:
+  max_proof_words: 200
+  max_distinct_lemma_invocations: 3
+  flag_compound_steps: true   # proofs containing "by X and Y" patterns get flagged
+
+# Dependency classification.
+# The audit reads these word-list files (relative to vault root's theory/lean/_meta/).
+classification:
+  mathlib_stable_terms_file: "mathlib-stable-terms.txt"
+  blocked_terms_file: "point-process-terms.txt"
+
+# Translator subagent defaults.
+translator:
+  iteration_budget: 5             # K — max compile-feedback rounds per dispatch
+  early_stop_on_repeat: true      # stop if same compiler error repeats twice in a row
+  inline_axiom_detection: true    # scan for `axiom` and ad-hoc local `def`s of foundational terms
+
+# Frontmatter coordination with theory-vault-writer.
+frontmatter:
+  status_field: "lean_status"
+  file_field: "lean_file"
+  attempts_field: "lean_attempt_count"
+  diagnostics_field: "lean_diagnostics_class"
+  stale_aggressive: true          # mark stale on any vault edit (statement OR proof)

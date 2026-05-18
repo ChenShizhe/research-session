@@ -1,0 +1,16 @@
+## Lean status
+
+**Pending-review queue** (statement-parity human gate required):
+{{PENDING_REVIEW_LIST}}
+
+**Recent failures** (last 7 days):
+- translation-bug: {{TRANSLATION_BUG_COUNT}}
+{{TRANSLATION_BUG_NODES}}
+- dep-mismatch: {{DEP_MISMATCH_COUNT}}
+{{DEP_MISMATCH_NODES}}
+- proof-gap: {{PROOF_GAP_COUNT}}
+{{PROOF_GAP_NODES}}
+
+**Stale (vault edited since last translation)**: {{STALE_COUNT}} nodes — re-translation queued
+
+**Summary**: `{{VERIFIER_SUMMARY_LINE}}`

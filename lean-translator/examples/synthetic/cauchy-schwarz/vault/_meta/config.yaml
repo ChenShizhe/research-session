@@ -1,0 +1,3 @@
+project_namespace: SyntheticExample
+lean_version: v4.29.1
+mathlib_version: main

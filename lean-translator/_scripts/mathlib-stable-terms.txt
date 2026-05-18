@@ -1,0 +1,66 @@
+# Mathlib-stable terms allowlist
+#
+# Vault nodes whose dependencies (frontmatter + body) match terms here are
+# classified as `mathlib-stable` by the audit, making them candidates for
+# Lean translation. The list is conservative — only terms with well-established
+# Mathlib coverage as of mid-2026 are included.
+#
+# Format: one term or phrase per line. Lines starting with `#` are comments.
+# Matching is case-insensitive, substring-based, word-boundary aware.
+# Edit this file per project to extend coverage as it matures.
+
+# Foundations
+real analysis
+measure theory
+sigma-algebra
+sigma algebra
+Banach space
+Bochner integral
+Lebesgue integral
+conditional expectation
+
+# Probability foundations
+filtration
+adapted process
+predictable process
+stopping time
+hitting time
+
+# Martingale theory (continuous and discrete time)
+martingale
+submartingale
+supermartingale
+Doob convergence
+Doob inequality
+optional stopping
+martingale convergence
+
+# Standard inequalities
+Cauchy-Schwarz
+Holder inequality
+Holder's inequality
+Minkowski
+Jensen
+triangle inequality
+Markov inequality
+Chebyshev inequality
+Bernstein inequality
+Hoeffding inequality
+McDiarmid
+
+# Linear algebra
+inner product
+inner product space
+norm
+orthogonal
+Gram-Schmidt
+
+# Calculus / analysis
+limit
+continuous
+differentiable
+integrable
+uniform convergence
+dominated convergence
+monotone convergence
+Fatou

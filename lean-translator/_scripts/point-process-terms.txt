@@ -1,0 +1,48 @@
+# Mathlib-blocked terms blocklist
+#
+# Vault nodes whose dependencies (frontmatter + body) match terms here are
+# classified as `mathlib-blocked` by the audit and will not be translated in v1.
+# These terms point to mathematical objects not yet in stable Mathlib as of
+# mid-2026 (per the lean-translator feasibility brief).
+#
+# Format: one term or phrase per line. Lines starting with `#` are comments.
+# Matching is case-insensitive, substring-based, word-boundary aware.
+# Edit this file per project to add domain-specific blocked terms as needed.
+
+# Point-process theory (no Mathlib coverage as of mid-2026)
+counting process
+point process
+marked point process
+intensity process
+predictable intensity
+conditional intensity
+compensator
+predictable compensator
+
+# Stochastic integration against jump processes
+stochastic integral against counting process
+stochastic integral with jumps
+jump process integral
+
+# Specific point-process models
+self-exciting process
+mutually exciting process
+
+# Martingale tools for jump processes
+Doleans-Dade exponential
+Doleans exponential
+exponential martingale for jumps
+martingale Bernstein with jumps
+Freedman inequality for jumps
+Freedman martingale inequality
+
+# Stability theory (no Mathlib coverage)
+nonlinear point-process stability
+
+# Brownian motion / Ito (in active development but migration to Mathlib in progress)
+# Uncomment below if your project depends on these and you want them blocked
+# during the migration window:
+# Ito integral
+# Brownian motion
+# Ito formula
+# local martingale (continuous)
