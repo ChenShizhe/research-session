@@ -5,13 +5,16 @@ description: >-
   schematics, plots, model illustrations — with properly typeset LaTeX math, in
   Excalidraw (including Excalidraw Plus) by driving a browser with computer use.
   Use this whenever a user wants to build or revise a diagram/figure/illustration
-  in Excalidraw that contains mathematical notation, or wants a figure assembled
-  from separately-editable pieces (so they and their collaborators can keep tuning
-  it by hand). Also trigger for the spoken/written alias "Excalidoodle." Trigger even when the user doesn't say "Excalidraw" explicitly — if
-  they want an editable, math-bearing figure on a whiteboard-style canvas, or ask
-  to tweak labels/panels/sizes on an existing one, reach for this skill. Excalidraw
-  cannot render LaTeX itself, so naive approaches produce raw "$x$" text or flat
-  images; this skill solves that and the human-in-the-loop editing problem.
+  or slide-card deck in Excalidraw that contains mathematical notation,
+  multilingual labels, or separately-editable pieces (so they and their
+  collaborators can keep tuning it by hand). Also trigger for the spoken/written
+  alias "Excalidoodle." Trigger even when the user doesn't say "Excalidraw"
+  explicitly — if they want an editable, math-bearing figure on a whiteboard-style
+  canvas, ask to tweak labels/panels/sizes on an existing one, or need reliable
+  PDF/PNG exports from an Excalidraw slide scene, reach for this skill. Excalidraw
+  cannot render LaTeX itself, and multilingual PDF exports can silently fail with
+  the wrong font; this skill solves those production and human-in-the-loop editing
+  problems.
 ---
 
 # Excalidoodler — Excalidraw figure authoring
@@ -36,11 +39,19 @@ is its own vector image; each data panel is its own image; boxes/arrows are nati
 shapes), bring them onto the canvas as separate elements, and from then on make
 **targeted** edits only.
 
+For slide-card decks, the same principle applies at slide scale: each slide box is
+an editable production unit. Make one slide good, let the human fix it in place,
+then treat that live scene as canonical for later exports and narration.
+
 ## When to use it
 
 - Building a new diagram/DAG/schematic/plot in Excalidraw that has math labels.
 - Revising such a figure: changing a label, resizing or swapping a panel, adjusting
   a caption, adding a node — without disturbing the rest.
+- Building or maintaining an Excalidraw slide-card deck whose boxes, text, and
+  visual assets will later be exported to PDF/PNG or narrated video.
+- Exporting or re-exporting multilingual Excalidraw slides, especially Chinese
+  slides where font choice can make PDF output drop characters.
 - Works in either Excalidraw Plus or the free public Excalidraw — see Workspace.
 
 ## Workspace — Excalidraw Plus or plain Excalidraw
@@ -60,6 +71,46 @@ This skill **never requires Excalidraw Plus.** Use whichever the user has:
 Detect a logged-in Plus session or ask the user which they have; never block on Plus.
 Either way, keep the source files locally (see Persistence) so the scene can be
 rebuilt regardless.
+
+## Slide-card deck production
+
+When Excalidraw is being used as a slide deck surface rather than a single figure,
+keep the workflow segmented:
+
+1. Build one slide/card at a time inside a stable slide box.
+2. Preserve the user's manually adjusted slide boxes and title page. User edits in
+   the live Excalidraw scene are canonical.
+3. Append or targeted-edit the requested slide elements; do not rebuild the whole
+   deck unless the scene is empty or the user explicitly asks.
+4. After a human edits a slide, verify the current scene visually before exporting
+   or using it for narration.
+5. Export fresh PDF/PNG assets after every slide text or font change. Stale exports
+   easily leak into downstream voiceover assembly.
+
+For narrated-video pipelines, the exported slide images become production assets
+for the voiceover skill. Keep slide numbering stable (`slide-XX`) so per-slide
+audio, video, and corrections remain local.
+
+## Multilingual PDF/PNG export checks
+
+Before exporting Chinese or other non-Latin Excalidraw slides, confirm the text
+elements use a font that actually renders those characters in Excalidraw's PDF
+export path. A font can look acceptable in the live canvas yet fail in the
+downloaded PDF or derived slide images.
+
+Use this check before final export:
+
+1. Pick a known-good font for the target script; for the AI-for-research talk,
+   the fix was to use the same font family as the Chinese title text across the
+   affected Simplified Chinese slide text.
+2. Export a small PDF/PNG sample from the live scene.
+3. Inspect the downloaded output, not only the live canvas. Look for missing
+   Chinese characters, tofu boxes, blank text, or fallback-font layout shifts.
+4. If characters are missing, change the font in Excalidraw, re-export, and
+   replace downstream `slides/slide-XX.png` assets before any voiceover assembly.
+
+Do not treat a successful `.excalidraw` import or live-canvas reload as proof that
+PDF export is clean. Export verification is its own gate.
 
 ## Dependencies
 

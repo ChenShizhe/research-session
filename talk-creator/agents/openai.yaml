@@ -1,0 +1,6 @@
+interface:
+  display_name: "Talk Creator"
+  short_description: "Plan grounded research talks and slide scripts"
+  default_prompt: "Use $talk-creator to turn this research idea or source stack into a grounded talk plan with slide cards and script."
+policy:
+  allow_implicit_invocation: true
