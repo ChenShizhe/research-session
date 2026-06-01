@@ -276,7 +276,7 @@ Voice transcription introduces routine errors. The agent treats every user messa
 
 Two glossaries feed the cleanup matcher:
 
-1. **Central memory — universal personal pronunciation patterns.** `~/.claude/projects/-Users-rollbot-thebot-Documents/memory/feedback_voice_input_patterns.md`. Cross-project user-level patterns (e.g., the user pronouncing "skill" as `scale`). Loaded by `protocols/session-startup.md` Step 5d via a hardcoded Read — not via `memory-retriever` keyword pull.
+1. **Central memory — universal personal pronunciation patterns.** `~/.claude/projects/<project-dir>/memory/feedback_voice_input_patterns.md`. Cross-project user-level patterns (e.g., the user pronouncing "skill" as `scale`). Loaded by `protocols/session-startup.md` Step 5d via a hardcoded Read — not via `memory-retriever` keyword pull.
 2. **Per-project — project-specific terms.** `<project_root>/voice-glossary.yaml`. Paper authors, assumption labels, technique names, manuscript math vocabulary, any project-bound terminology. Loaded at Step 5d if present.
 
 The matcher consults both. **Central-memory entries win on conflict.**

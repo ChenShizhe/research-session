@@ -46,3 +46,22 @@ All over `*.md`, `*.py`, `*.lean`, `*.toml`, `*.yaml`, `*.json`, `*.txt`, `*.tem
 - Stage `lean-translator/` and the cross-skill edits to `research-meeting/` and `session-handoff/`.
 - Commit with message describing proposal 15 implementation.
 - Push to `origin/main` via header-injection auth (per project memory `project_research_meeting_improvement` Architectural State).
+
+---
+
+## Remediation note — 2026-05-31
+
+This audit's **scope was `lean-translator/` only** (see Scope above). It did not cover the rest of the repo, so the `/Users/rollbot-thebot` grep result of `0` is true *for lean-translator*, not for the whole repo.
+
+Two later changes re-introduced machine-specific absolute paths that this audit never examined:
+
+- **Commit `ff9df4c` (proposal 12, voice-input cleanup)** added a hardcoded central-memory pointer `~/.claude/projects/-Users-rollbot-thebot-Documents/memory/feedback_voice_input_patterns.md` in `research-meeting/SKILL.md`, `research-meeting/protocols/session-startup.md`, and `research-meeting/protocols/voice-input.md` (×2).
+- **Commit `ee2d11d` (talk/narration skills)** added absolute reference-script paths `/Users/rollbot-thebot/Documents/Research/ai-for-research-talk/scripts/*.py` in `voice-narrator/SKILL.md` (×2).
+
+These were committed and pushed to the public `origin/main`, so a clone on any other machine/account pointed at a nonexistent path.
+
+**Fix applied 2026-05-31:** the encoded memory-dir segment was replaced with a `<project-dir>` placeholder plus a one-line gloss (`<project-dir>` = the Claude Code project directory for the working tree, i.e. the absolute cwd with `/` written as `-`), and the voice-narrator absolute paths were made project-relative (`scripts/…` within the `ai-for-research-talk` project). The same memory-dir pointer was fixed in the separate `personal-assistant` repo. No git history was rewritten (deliberate — the exposure is benign and the fix is forward-only).
+
+The `/Users/rollbot-thebot` and `shizhe` strings remaining in the grep-term table above are kept as a faithful record of what the 2026-05-18 search looked for; they are search terms in this audit log, not functional paths.
+
+**Process gap:** depersonalization was audited once, scoped to a single subskill, and treated as a one-time gate. Any feature added afterward can re-personalize the repo. A pre-push grep for `/Users/` and known usernames over the whole tree (excluding `.lake/`) should run before every push, not just at first commit.

@@ -93,10 +93,10 @@ Voice cleanup uses **two glossaries**, consulted together. **Central-memory entr
 #### Central memory — universal personal pronunciation patterns
 
 ```
-~/.claude/projects/-Users-rollbot-thebot-Documents/memory/feedback_voice_input_patterns.md
+~/.claude/projects/<project-dir>/memory/feedback_voice_input_patterns.md
 ```
 
-Cross-project user-level patterns that hold across all projects (e.g., the user pronounces "skill" as `scale`). Loaded unconditionally at every research-meeting and personal-assistant session — see `protocols/session-startup.md` Step 5d. Format is a markdown feedback memory; new patterns are promoted into it by `experience-logger` at session close per `experience-logger/SKILL.md` § Voice Input Pattern Promotion. Compactness rules apply (each entry one bullet, max two lines, target ~20 entries).
+Here `<project-dir>` is the Claude Code project directory for the working tree — the absolute working-directory path with each `/` written as `-` — so the pointer resolves on whatever machine and account the skill runs under. Cross-project user-level patterns that hold across all projects (e.g., the user pronounces "skill" as `scale`). Loaded unconditionally at every research-meeting and personal-assistant session — see `protocols/session-startup.md` Step 5d. Format is a markdown feedback memory; new patterns are promoted into it by `experience-logger` at session close per `experience-logger/SKILL.md` § Voice Input Pattern Promotion. Compactness rules apply (each entry one bullet, max two lines, target ~20 entries).
 
 #### Per-project — project-specific terms
 
@@ -172,7 +172,7 @@ Both glossaries are loaded **unconditionally at session start**, not gated on `/
 
 Loading mechanics (see `protocols/session-startup.md` Step 5d):
 
-1. **Central memory.** Step 5d performs an explicit Read of `~/.claude/projects/-Users-rollbot-thebot-Documents/memory/feedback_voice_input_patterns.md`. This is **hardcoded**; do not rely on `memory-retriever` to surface it via keyword pull.
+1. **Central memory.** Step 5d performs an explicit Read of `~/.claude/projects/<project-dir>/memory/feedback_voice_input_patterns.md`. This is **hardcoded**; do not rely on `memory-retriever` to surface it via keyword pull.
 2. **Per-project glossary.** Step 5d Reads `<project_root>/voice-glossary.yaml` if present. If absent, continue without it; new project-specific entries accumulate in the file as cleanups surface during the session.
 
 If `/voice` is also active (Tier 1), the agent acknowledges it and reminds the user of the hybrid input norms. The cleanup behavior runs the same whether `/voice` is on or off — the `/voice` acknowledgment is a separate norm reminder, not a gate on the cleanup matcher.

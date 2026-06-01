@@ -174,7 +174,7 @@ Voice input awareness is **always loaded** at session start, regardless of wheth
 
 Read these at session start:
 
-1. `~/.claude/projects/-Users-rollbot-thebot-Documents/memory/feedback_voice_input_patterns.md` — central memory containing universal personal pronunciation patterns and the cleanup discipline. **Hardcoded read; do not rely on memory-retriever to surface it via keyword pull.**
+1. `~/.claude/projects/<project-dir>/memory/feedback_voice_input_patterns.md` — central memory containing universal personal pronunciation patterns and the cleanup discipline. **Hardcoded read; do not rely on memory-retriever to surface it via keyword pull.**
 2. `<project_root>/voice-glossary.yaml` if present — per-project terms (paper authors, assumption labels, manuscript math vocabulary). If absent, continue without it; new project-specific entries accumulate in the file as cleanups surface during the session.
 
 If the user has activated `/voice` (detectable from session state), additionally acknowledge:

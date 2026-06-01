@@ -155,8 +155,8 @@ Useful Android resource IDs from the reference workflow:
 - read-aloud button: `com.larus.nova:id/msg_action_re_tts`
 - bottom jump/reveal: `com.larus.nova:id/bottom_floating_button_container`
 
-Reference automation exists at
-`/Users/rollbot-thebot/Documents/Research/ai-for-research-talk/scripts/mobile_doubao_record_voiceover.py`.
+Reference automation exists in the `ai-for-research-talk` project at
+`scripts/mobile_doubao_record_voiceover.py`.
 Adapt paths and segment counts before reuse.
 
 ## Postprocess And Package
@@ -185,8 +185,8 @@ audio if needed to avoid timestamp issues, save under `video/final/`, and update
 the manifest. The prior project used `2120x1714`; choose or confirm the canvas
 for each project.
 
-Reference assembler:
-`/Users/rollbot-thebot/Documents/Research/ai-for-research-talk/scripts/assemble_voiceover_folder.py`.
+Reference assembler (in the `ai-for-research-talk` project):
+`scripts/assemble_voiceover_folder.py`.
 
 ## Upstream Feedback
 
